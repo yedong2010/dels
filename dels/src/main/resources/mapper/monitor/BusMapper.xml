@@ -1,0 +1,989 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dels.dao.monitor.BusMapper">
+    <resultMap id="NoBusMatterResultMap"
+        type="com.dels.model.monitor.NoBusMatters">
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="sname" property="sname" jdbcType="VARCHAR" />
+        <result column="wywsxs" property="wywsxs" jdbcType="VARCHAR" />
+        <result column="jzsxs" property="jzsxs" jdbcType="VARCHAR" />
+        <result column="wywsxl" property="wywsxl" jdbcType="VARCHAR" />
+    </resultMap>
+    <!-- 获取省级指定年份的无业务事项数 -->
+    <select id="szwywsx" resultMap="NoBusMatterResultMap" parameterType="int">
+        select A.zzjgmc as name,A.zzjgjc as sname,(A.xzspsxs - ifnull(B.ywsxs,0)) as wywsxs,A.xzspsxs as jzsxs,ifnull((A.xzspsxs - ifnull(B.ywsxs,0))*100/A.xzspsxs,0) as wywsxl from
+        (
+        select T1.zzjgmc,T1.zzjgjc,T1.xzspsxs,T2.order from
+        (
+        select zzjgmc,zzjgjc,count(1) as xzspsxs from DMS_SXWD_HISTORY
+        where nf = #{choseYear} and yf = #{emonth} and qyjbdm = 2  and sxlxmc = '行政审批' and FWSXZT='PUBLISHED'
+        group by zzjgmc,zzjgjc
+        )T1
+        left join dim_province_order T2
+        on T1.zzjgmc = T2.name
+        order by T2.order
+        ) A
+        left join
+        (
+        select t.zzjgmc,count(1) as ywsxs from
+        (
+        select t2.sxbm,t2.zzjgmc from
+        (
+        select sxbm,zzjgmc from t_tj_wywsx_sz_new
+        <![CDATA[
+        where tjnf = #{choseYear} and tjyf >= #{smonth} and tjyf <= #{emonth}
+        ]]>
+        group by sxbm,zzjgmc
+        order by zzjgmc desc
+        )T1 INNER JOIN DMS_SXWD_HISTORY T2
+        on t1.sxbm = t2.sxbm
+        where t2.nf = #{choseYear} and t2.yf = #{emonth} and t2.fwsxzt = 'PUBLISHED' and t2.sxlxmc = '行政审批'
+        )T
+        group by t.zzjgmc
+        ) B
+        on A.zzjgmc = B.zzjgmc
+        <if test="cparams!=null">
+            where A.zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        order by A.order
+    </select>
+
+    <!-- 获取地市指定年份的无业务事项数 -->
+    <select id="dswywsx" resultMap="NoBusMatterResultMap">
+        select A.sjmc as name,A.sname as sname,(A.xzspsxs - ifnull(B.ywsxs,0)) as wywsxs,A.xzspsxs as jzsxs,ifnull((A.xzspsxs - ifnull(B.ywsxs,0))*100/A.xzspsxs,0) as wywsxl from
+        (
+        select T1.sjmc,T2.sname,T1.xzspsxs,T2.seq from
+        (
+        select sjmc,count(1) as xzspsxs from DMS_SXWD_HISTORY
+        where nf = #{choseYear} and yf = #{emonth} and qyjbdm = 3  and sxlxmc = '行政审批' and FWSXZT='PUBLISHED'
+        group by sjmc
+        )T1
+        left join dim_city_order T2
+        on T1.sjmc = T2.name
+        order by T2.seq
+        ) A
+        left join
+        (
+        select t.sjmc,count(1) as ywsxs from
+        (
+        select t2.sxbm,t2.sjmc from
+        (
+        select sxbm,sjmc from t_tj_wywsx_ds_new
+        <![CDATA[
+        where tjnf = #{choseYear} and tjyf >= #{smonth} and tjyf <= #{emonth}
+        ]]>
+        group by sxbm,sjmc
+        order by sjmc desc
+        )t1 inner join DMS_SXWD_HISTORY T2
+        on t1.sxbm = t2.sxbm
+        where t2.nf = #{choseYear} and t2.yf = #{emonth} and t2.fwsxzt = 'PUBLISHED' and t2.sxlxmc = '行政审批'
+        )T
+        group by t.sjmc
+        ) B
+        on A.sjmc = B.sjmc
+        <if test="cparams!=null">
+            where a.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        order by A.seq
+    </select>
+
+    <!-- 获取全省级指定年份的无业务事项数概况 -->
+    <select id="szwywsxgk" resultMap="NoBusMatterResultMap"
+        parameterType="int">
+        select sum(t.wywsxs) wywsxs, sum(t.jzsxs) jzsxs,
+        ifnull(sum(t.wywsxs)*100/sum(t.jzsxs),0) as wywsxl
+        from
+        (
+        select A.zzjgmc,A.wywsxs,A.xzspsxs as jzsxs,
+        ifnull(A.wywsxs*100/A.xzspsxs,0) as wywsxl
+        from TERCEL.T_TJ_WYWSX_SZ A
+        where A.tjnf=#{choseYear} and A.tjyf=#{emonth}
+        <if test="cparams!=null">
+            and A.zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        )t
+    </select>
+
+    <!-- 获取全地市指定年份的无业务事项数概况 -->
+    <select id="dswywsxgk" resultMap="NoBusMatterResultMap">
+        select sum(t.wywsxs) wywsxs, sum(t.jzsxs) jzsxs,
+        ifnull(sum(t.wywsxs)*100/sum(t.jzsxs),0) as wywsxl
+        from
+        (
+        select A.sjmc,A.wywsxs,A.xzspsxs as jzsxs,
+        ifnull(A.wywsxs*100/A.xzspsxs,0) as wywsxl
+        from TERCEL.T_TJ_WYWSX_DS A
+        where A.tjnf=#{choseYear} and A.tjyf=#{emonth}
+        <if test="cparams!=null">
+            and a.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        )t
+    </select>
+    <!-- 获取省级指定年份、月份的业务办理详情 -->
+    <select id="szywbl" resultType="java.util.HashMap">
+        SELECT A.zzjgmc as name,A.zzjgjc as sname, A.zs, b.zc, (a.zs-b.zc) as yc
+        FROM
+        (
+        SELECT zzjgmc,zzjgjc, IFNULL(sum(xj), 0) AS zs
+        FROM T_TJ_YCBJ_SZ
+        where tjnf = #{year}
+        <![CDATA[ AND tjyf>=#{smonth} AND tjyf<=#{emonth} ]]>
+        and sjmc = '广东省'
+        group by zzjgmc,zzjgjc
+        )as A LEFT JOIN
+        (
+        SELECT ZZJGMC,zzjgjc, IFNULL(SUM(XJ), 0) AS zc
+        FROM T_TJ_YCBJ_SZ
+        WHERE TJNF = #{year}
+        <![CDATA[ AND tjyf>=#{smonth} AND tjyf<=#{emonth} ]]>
+        AND SJMC = '广东省'
+        AND BJJGDM in('0', '6')
+        GROUP BY ZZJGMC,zzjgjc
+        )as B ON A.zzjgmc = B.ZZJGMC
+        left join dim_province_order o on a.zzjgmc = o.name
+        <if test="cparams!=null">
+            where A.zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        order by o.order;
+    </select>
+    <!-- 获取地市指定年份、月份的业务办理详情 -->
+    <select id="dsywbl" resultType="java.util.HashMap">
+        SELECT A.sjmc as name, A.sjmc as sname, A.zs, b.zc, (a.zs-b.zc)as yc
+        FROM
+        (
+        SELECT sjmc, IFNULL(sum(xj), 0) AS zs
+        FROM
+        T_TJ_YCBJ_DS
+        where tjnf = #{year}
+        <![CDATA[
+                AND tjyf>=#{smonth} AND tjyf<=#{emonth}
+            ]]>
+        AND qyjbdm = 3
+        group by sjmc
+        )as A LEFT JOIN
+        (
+        SELECT sjmc,
+        IFNULL(sum(xj), 0) AS zc
+        FROM T_TJ_YCBJ_DS
+        where tjnf =
+        #{year}
+        <![CDATA[
+                AND tjyf>=#{smonth} AND tjyf<=#{emonth}
+            ]]>
+        AND qyjbdm = 3
+        AND bjjgdm IN('0', '6')
+        group by sjmc
+        )as B ON
+        A.sjmc = B.sjmc
+        left join dim_city_order c on a.sjmc = c.name
+        <if test="cparams!=null">
+            where a.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        order by c.seq;
+    </select>
+    <!-- 获取省级指定年份、月份的业务办理详情 -->
+    <select id="szywblgk" resultType="java.util.HashMap">
+        SELECT IFNULL(sum(A.zs),0) as zs, IFNULL(sum(b.zc),0) as zc, IFNULL(sum(a.zs-b.zc),0) as yc
+        FROM
+        (
+        SELECT zzjgmc, IFNULL(sum(xj), 0) AS zs
+        FROM T_TJ_YCBJ_SZ
+        where tjnf = #{year}
+        <![CDATA[ AND tjyf>=#{smonth} AND tjyf<=#{emonth} ]]>
+        and sjmc = '广东省'
+        <if test="cparams!=null">
+            and zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        group by zzjgmc
+        )as A LEFT JOIN
+        (
+        SELECT ZZJGMC, IFNULL(SUM(XJ), 0) AS zc
+        FROM T_TJ_YCBJ_SZ
+        WHERE TJNF = #{year}
+        <![CDATA[ AND tjyf>=#{smonth} AND tjyf<=#{emonth} ]]>
+        AND SJMC = '广东省'
+        AND BJJGDM in('0', '6')
+        GROUP BY ZZJGMC
+        )as B ON A.zzjgmc = B.ZZJGMC;
+    </select>
+    <!-- 获取地市指定年份、月份的业务办理详情 -->
+    <select id="dsywblgk" resultType="java.util.HashMap">
+        SELECT IFNULL(sum(A.zs),0) as zs, IFNULL(sum(b.zc),0) as zc, IFNULL(sum(a.zs-b.zc),0) as yc
+        FROM
+        (
+        SELECT sjmc, IFNULL(sum(xj), 0) AS zs
+        FROM
+        T_TJ_YCBJ_DS
+        where tjnf = #{year}
+        <![CDATA[
+                AND tjyf>=#{smonth} AND tjyf<=#{emonth}
+            ]]>
+        AND qyjbdm = 3
+        <if test="cparams!=null">
+            and sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        group by sjmc
+        )as A LEFT JOIN
+        (
+        SELECT sjmc, IFNULL(sum(xj), 0) AS
+        zc
+        FROM T_TJ_YCBJ_DS
+        where tjnf = #{year}
+        <![CDATA[
+                AND tjyf>=#{smonth} AND tjyf<=#{emonth}
+            ]]>
+        <if test="cparams!=null">
+            and sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        AND qyjbdm = 3
+        AND bjjgdm IN('0', '6')
+        group by sjmc
+        )as B ON
+        A.sjmc = B.sjmc;
+    </select>
+    <!-- 获取省级指定年份、部门的无业务事项详情 -->
+    <select id="szwywsxxq" resultType="java.util.HashMap">
+        select A.sxbm,A.sxmc,A.sbwsbssd,A.pdcs,A.sxlxmc from
+        (
+        select sxbm,sxmc,sbwsbssd,pdcs,sxlxmc
+        from dms_sxwd_history
+        where nf = #{choseYear} and yf = #{emonth} and zzjgmc = #{name} and qyjbdm = 2 and fwsxzt = 'PUBLISHED' and sxlxmc = '行政审批'
+        ) A
+        left join
+        (
+        select sxbm from t_tj_wywsx_sz_new
+        <![CDATA[
+        where tjnf = #{choseYear} and tjyf >= #{smonth} and tjyf <= #{emonth} and zzjgmc = #{name}
+        ]]>
+        group by sxbm
+        ) B
+        on A.sxbm = B.sxbm
+        where B.sxbm is null
+    </select>
+
+    <!-- 获取地市指定年份、地市的无业务事项详情 -->
+    <select id="dswywsxxq" resultType="java.util.HashMap">
+        select A.sxbm,A.sxmc,A.sbwsbssd,A.pdcs,A.sxlxmc from
+        (
+        select sxbm,sxmc,sbwsbssd,pdcs,sxlxmc
+        from dms_sxwd_history
+        where nf = #{choseYear} and yf = #{emonth} and sjmc = #{name} and qyjbdm = 3 and fwsxzt = 'PUBLISHED' and sxlxmc = '行政审批'
+        ) A
+        left join
+        (
+        select sxbm from t_tj_wywsx_ds_new
+        <![CDATA[
+        where tjnf = #{choseYear} and tjyf >= #{smonth} and tjyf <= #{emonth} and sjmc = #{name}
+        ]]>
+        group by sxbm
+        ) B
+        on A.sxbm = B.sxbm
+        where B.sxbm is null
+    </select>
+
+    <!-- 获取省级部门指定年份、月份、部门名称的异常办结 -->
+    <select id="szycbj" resultType="java.util.HashMap">
+        <![CDATA[
+            SELECT ZZJGMC as name,BJJGDM as code,SUM(WSBJZS) AS zs FROM t_tj_ycbj_jc
+            WHERE TJNF=#{year} AND TJYF>=#{smonth} AND TJYF<=#{emonth}
+            AND ZZJGMC=#{name} AND QYJBDM=2
+            AND BJJGDM NOT IN ('0','6')
+            GROUP BY ZZJGMC,BJJGDM
+        ]]>
+    </select>
+
+    <!-- 获取地市指定年份、月份、地市名称的异常办结 -->
+    <select id="dsycbj" resultType="java.util.HashMap">
+        <![CDATA[
+            SELECT SJMC as name,BJJGDM as code,SUM(WSBJZS) AS zs FROM t_tj_ycbj_jc
+            WHERE TJNF=#{year} AND TJYF>=#{smonth} AND TJYF<=#{emonth}
+            AND SJMC=#{name} AND QYJBDM=3
+            AND BJJGDM NOT IN ('0','6')
+            GROUP BY SJMC,BJJGDM
+        ]]>
+    </select>
+
+    <!-- 获取省级部门指定年份、月份、部门名称的异常办结-详情列表 -->
+    <select id="szycbjxq" resultType="java.util.HashMap">
+        <![CDATA[
+            SELECT sblsh,sxbm,zzjgdm,xzqhdm,bjsj,trim(bjjgdm) as bjjgdm FROM BJ_HISTORY
+            WHERE (SBLSH,SXBM) IN  (SELECT DISTINCT SBLSH,SXBM FROM SB_HISTORY WHERE TJFS=1)
+            AND DATE_FORMAT(BJSJ,'%Y-%m')>=concat(#{year},'-',LPAD(#{smonth},2,'0'))
+            AND DATE_FORMAT(BJSJ,'%Y-%m')<=concat(#{year},'-',LPAD(#{emonth},2,'0'))
+            AND XZQHDM='440000' AND ZZJGDM=(SELECT ZZJGDM FROM DIM_DEPARTMENT WHERE ZZJGMC=#{name})
+            AND trim(BJJGDM) NOT IN (0,6)
+        ]]>
+    </select>
+
+    <!-- 获取地市指定年份、月份、地市名称的异常办结-详情列表 -->
+    <select id="dsycbjxq" resultType="java.util.HashMap">
+        <![CDATA[
+            SELECT sblsh,sxbm,zzjgdm,xzqhdm,bjsj,trim(bjjgdm) as bjjgdm FROM BJ_HISTORY
+            WHERE (SBLSH,SXBM) IN  (SELECT DISTINCT SBLSH,SXBM FROM SB_HISTORY WHERE TJFS=1)
+            AND DATE_FORMAT(BJSJ,'%Y-%m')>=concat(#{year},'-',LPAD(#{smonth},2,'0'))
+            AND DATE_FORMAT(BJSJ,'%Y-%m')<=concat(#{year},'-',LPAD(#{emonth},2,'0'))
+            AND XZQHDM IN
+            (SELECT XZQHDM FROM T_DIM_AREADIVIDE WHERE SJMC=#{name} AND QYJBDM=3)
+            AND trim(BJJGDM) NOT IN (0,6)
+        ]]>
+    </select>
+
+    <!-- 获取省级指定年份、月份的业务办理总计 -->
+    <select id="szywblzj" resultType="java.util.HashMap">
+        SELECT ifnull(sum(d.zs),0) as zs,ifnull(sum(d.zc),0) as zc,ifnull(sum(d.yc),0) as yc
+        from
+        (
+        SELECT A.zzjgmc as name,A.zzjgjc as sname, A.zs as zs, b.zc as zc, (a.zs-b.zc) as yc
+        FROM
+        (
+        SELECT zzjgmc,zzjgjc, IFNULL(sum(xj), 0) AS zs
+        FROM T_TJ_YCBJ_SZ
+        where tjnf = #{year}
+        <![CDATA[ AND tjyf>=#{smonth} AND tjyf<=#{emonth} ]]>
+        and sjmc = '广东省'
+        group by zzjgmc,zzjgjc
+        )as A LEFT JOIN
+        (
+        SELECT ZZJGMC,zzjgjc, IFNULL(SUM(XJ), 0) AS zc
+        FROM T_TJ_YCBJ_SZ
+        WHERE TJNF = #{year}
+        <![CDATA[ AND tjyf>=#{smonth} AND tjyf<=#{emonth} ]]>
+        AND SJMC = '广东省'
+        AND BJJGDM in('0', '6')
+        GROUP BY ZZJGMC,zzjgjc
+        )as B ON A.zzjgmc = B.ZZJGMC
+        <if test="cparams!=null">
+            where A.zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        ) as d
+    </select>
+    <!-- 获取区域地市指定年份、月份的业务办理总计 -->
+    <select id="dsywblzj" resultType="java.util.HashMap">
+        SELECT ifnull(sum(d.zs),0) as zs,ifnull(sum(d.zc),0) as zc,ifnull(sum(d.yc),0) as yc
+        from
+        (
+        SELECT A.sjmc as name, A.sjmc as sname, A.zs as zs, b.zc as zc, (a.zs-b.zc) as yc
+        FROM
+        (
+        SELECT sjmc, IFNULL(sum(xj), 0) AS zs
+        FROM T_TJ_YCBJ_DS
+        where tjnf = #{year}
+        <![CDATA[
+                AND tjyf>=#{smonth} AND tjyf<=#{emonth}
+            ]]>
+        AND qyjbdm = 3
+        group by sjmc
+        )as A LEFT JOIN
+        (
+        SELECT sjmc,
+        IFNULL(sum(xj), 0) AS zc
+        FROM T_TJ_YCBJ_DS
+        where tjnf = #{year}
+        <![CDATA[
+                AND tjyf>=#{smonth} AND tjyf<=#{emonth}
+            ]]>
+        AND qyjbdm = 3
+        AND bjjgdm IN('0', '6')
+        group by sjmc
+        )as B ON A.sjmc = B.sjmc
+        <if test="cparams!=null">
+            where a.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        ) as d
+    </select>
+    <!-- 获取省级指定年份的无业务事项数总计 -->
+    <select id="szwywsxzj" resultMap="NoBusMatterResultMap" parameterType="int">
+        select sum(A.xzspsxs - ifnull(B.ywsxs,0)) as wywsxs, sum(A.xzspsxs) as jzsxs,sum(A.xzspsxs-ifnull(B.ywsxs,0))*100/sum(A.xzspsxs) as wywsxl from
+        (
+        select zzjgmc,zzjgjc,count(1) as xzspsxs from DMS_SXWD_HISTORY
+        where nf = #{choseYear} and yf = #{emonth} and qyjbdm = 2  and sxlxmc = '行政审批' and FWSXZT='PUBLISHED'
+        group by zzjgmc,zzjgjc
+        ) A
+        left join
+        (
+        select t.zzjgmc,count(1) as ywsxs from
+        (
+        select t2.sxbm,t2.zzjgmc from
+        (
+        select sxbm,zzjgmc from t_tj_wywsx_sz_new
+        <![CDATA[
+        where tjnf = #{choseYear} and tjyf >= #{smonth} and tjyf <= #{emonth}
+        ]]>
+        group by sxbm,zzjgmc
+        order by zzjgmc desc
+        )t1
+        inner join dms_sxwd_history t2
+        on t1.sxbm = t2.sxbm
+        where t2.nf = #{choseYear} and t2.yf = #{emonth} and t2.fwsxzt = 'PUBLISHED' and t2.sxlxmc = '行政审批'
+        )T
+        group by t.zzjgmc
+        )B
+        on A.zzjgmc = B.zzjgmc
+        <if test="cparams!=null">
+            where A.zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+
+    </select>
+    <!-- 获取区域地市指定年份的无业务事项数总计 -->
+    <select id="dswywsxzj" resultMap="NoBusMatterResultMap" parameterType="int">
+        select sum(A.xzspsxs - ifnull(B.ywsxs,0)) as wywsxs, sum(A.xzspsxs) as jzsxs,sum(A.xzspsxs-ifnull(B.ywsxs,0))*100/sum(A.xzspsxs) as wywsxl from
+        (
+        select sjmc,count(1) as xzspsxs from DMS_SXWD_HISTORY
+        where nf = #{choseYear} and yf = #{emonth} and qyjbdm = 3  and sxlxmc = '行政审批' and FWSXZT='PUBLISHED'
+        group by sjmc
+        ) A
+        left join
+        (
+        select t.sjmc,count(1) as ywsxs from
+        (
+        select t2.sxbm,t2.sjmc from
+        (
+        select sxbm,sjmc from t_tj_wywsx_ds_new
+        <![CDATA[
+        where tjnf = #{choseYear} and tjyf >= #{smonth} and tjyf <= #{emonth}
+        ]]>
+        group by sxbm,sjmc
+        order by sjmc desc
+        )t1
+        inner join dms_sxwd_history t2
+        on t1.sxbm = t2.sxbm
+        where t2.nf = #{choseYear} and t2.yf = #{emonth} and t2.fwsxzt = 'PUBLISHED' and t2.sxlxmc = '行政审批'
+        )T
+        group by t.sjmc
+        )B
+        on A.sjmc = B.sjmc
+        <if test="cparams!=null">
+            where a.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+
+    </select>
+
+    <!-- 省级部门行政审批总业务 -->
+    <select id="bjzsx" resultType="java.util.HashMap">
+    <![CDATA[ 
+        SELECT B.sblsh,B.sxbm,S.sxlxmc,B.zzjgdm,B.bjbmmc,B.bjjgdm,B.xzqhdm,B.bjsj FROM BJ_HISTORY B
+        INNER JOIN DMS_SXWD_HISTORY S ON B.SXBM=S.SXBM
+        AND LEFT(BJSJ,4)=S.NF AND SUBSTR(BJSJ,6,2)=LPAD(S.YF,2,'0')
+        WHERE DATE_FORMAT(B.BJSJ,'%Y-%m')>=concat(#{year},'-',LPAD(#{smonth},2,'0')) AND DATE_FORMAT(B.BJSJ,'%Y-%m')<=concat(#{year},'-',LPAD(#{emonth},2,'0'))
+        AND (B.SXBM,B.SBLSH) IN (SELECT DISTINCT SXBM,SBLSH FROM SB_HISTORY)
+        AND  B.XZQHDM='440000' AND B.ZZJGDM = (SELECT ZZJGDM FROM DIM_DEPARTMENT WHERE ZZJGMC=#{name})
+        AND S.SXLXMC='行政审批'
+    ]]>
+    </select>
+    <!-- 省级部门行政审批上网申办业务 -->
+    <select id="swsbx" resultType="java.util.HashMap">
+    <![CDATA[ 
+        SELECT B.sblsh,B.sxbm,S.sxlxmc,B.zzjgdm,B.bjbmmc,B.bjjgdm,B.xzqhdm,B.bjsj FROM BJ_HISTORY B
+        INNER JOIN DMS_SXWD_HISTORY S ON B.SXBM=S.SXBM
+        AND LEFT(BJSJ,4)=S.NF AND SUBSTR(BJSJ,6,2)=LPAD(S.YF,2,'0')
+        WHERE DATE_FORMAT(B.BJSJ,'%Y-%m')>=concat(#{year},'-',LPAD(#{smonth},2,'0')) AND DATE_FORMAT(B.BJSJ,'%Y-%m')<=concat(#{year},'-',LPAD(#{emonth},2,'0'))
+        AND (B.SXBM,B.SBLSH) IN (SELECT DISTINCT SXBM,SBLSH FROM SB_HISTORY WHERE TJFS=1)
+        AND  B.XZQHDM='440000' AND B.ZZJGDM = (SELECT ZZJGDM FROM DIM_DEPARTMENT WHERE ZZJGMC=#{name})
+        AND S.SXLXMC='行政审批'
+    ]]>
+    </select>
+    <!-- 省级部门行政审批网上全流程办理且办结业务 -->
+    <select id="wsqlcbjx" resultType="java.util.HashMap">
+    <![CDATA[
+        SELECT B.sblsh,B.sxbm,S.sxlxmc,B.zzjgdm,B.bjbmmc,B.bjjgdm,B.xzqhdm,B.bjsj FROM BJ_HISTORY B
+        INNER JOIN DMS_SXWD_HISTORY S ON B.SXBM=S.SXBM
+        AND LEFT(BJSJ,4)=S.NF AND SUBSTR(BJSJ,6,2)=LPAD(S.YF,2,'0')
+        WHERE DATE_FORMAT(B.BJSJ,'%Y-%m')>=concat(#{year},'-',LPAD(#{smonth},2,'0')) AND DATE_FORMAT(B.BJSJ,'%Y-%m')<=concat(#{year},'-',LPAD(#{emonth},2,'0'))
+        AND (B.SXBM,B.SBLSH) IN (SELECT DISTINCT SXBM,SBLSH FROM SB_HISTORY WHERE TJFS=1)
+        AND  B.XZQHDM='440000' AND B.ZZJGDM = (SELECT ZZJGDM FROM DIM_DEPARTMENT WHERE ZZJGMC=#{name})
+        AND S.SXLXMC='行政审批'
+        AND S.SBWSBSSD=3
+    ]]>
+    </select>
+    <!-- 省级部门公共服务上网申办业务 -->
+    <select id="swsbs" resultType="java.util.HashMap">
+    <![CDATA[
+        SELECT B.sblsh,B.sxbm,S.sxlxmc,B.zzjgdm,B.bjbmmc,B.bjjgdm,B.xzqhdm,B.bjsj FROM BJ_HISTORY B
+        INNER JOIN DMS_SXWD_HISTORY S ON B.SXBM=S.SXBM
+        AND LEFT(BJSJ,4)=S.NF AND SUBSTR(BJSJ,6,2)=LPAD(S.YF,2,'0')
+        WHERE DATE_FORMAT(B.BJSJ,'%Y-%m')>=concat(#{year},'-',LPAD(#{smonth},2,'0')) AND DATE_FORMAT(B.BJSJ,'%Y-%m')<=concat(#{year},'-',LPAD(#{emonth},2,'0'))
+        AND (B.SXBM,B.SBLSH) IN (SELECT DISTINCT SXBM,SBLSH FROM SB_HISTORY WHERE TJFS=1)
+        AND  B.XZQHDM='440000' AND B.ZZJGDM = (SELECT ZZJGDM FROM DIM_DEPARTMENT WHERE ZZJGMC=#{name})
+        AND S.SXLXMC='公共服务'
+    ]]>
+    </select>
+    <!-- 省级部门公共服务总业务 -->
+    <select id="bjzss" resultType="java.util.HashMap">
+    <![CDATA[
+        SELECT B.sblsh,B.sxbm,S.sxlxmc,B.zzjgdm,B.bjbmmc,B.bjjgdm,B.xzqhdm,B.bjsj FROM BJ_HISTORY B
+        INNER JOIN DMS_SXWD_HISTORY S ON B.SXBM=S.SXBM
+        AND LEFT(BJSJ,4)=S.NF AND SUBSTR(BJSJ,6,2)=LPAD(S.YF,2,'0')
+        WHERE DATE_FORMAT(B.BJSJ,'%Y-%m')>=concat(#{year},'-',LPAD(#{smonth},2,'0')) AND DATE_FORMAT(B.BJSJ,'%Y-%m')<=concat(#{year},'-',LPAD(#{emonth},2,'0'))
+        AND (B.SXBM,B.SBLSH) IN (SELECT DISTINCT SXBM,SBLSH FROM SB_HISTORY)
+        AND  B.XZQHDM='440000' AND B.ZZJGDM = (SELECT ZZJGDM FROM DIM_DEPARTMENT WHERE ZZJGMC=#{name})
+        AND S.SXLXMC='公共服务'
+    ]]>
+    </select>
+
+    <!-- 全省业务趋势——网上办结量 -->
+    <select id="qstrendwsbj" resultType="java.util.HashMap">
+        <![CDATA[
+            select
+            (SELECT ifnull(SUM(SWSBZS),0) FROM DMS_CORE_COUNT_HXTJ
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+        ]]>
+            <if test="area!=null and area!='' and area==0">
+              AND d.XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+        <![CDATA[
+            AND SXLXMC='行政审批' ) xzspswbjzs,
+            (SELECT ifnull(SUM(SWSBZS),0) FROM DMS_CORE_COUNT_HXTJ
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+        ]]>
+            <if test="area!=null and area!='' and area==0">
+              AND d.XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+        <![CDATA[
+            AND SXLXMC='公共服务') shfwswbjzs,
+            ifnull(SUM(SWSBZS),0) swbjzs FROM DMS_CORE_COUNT_HXTJ
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+          ]]>
+            <if test="area!=null and area!='' and area==0">
+              AND d.XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+    </select>
+
+    <!-- 省级业务趋势——网上办结量 -->
+    <select id="sztrendwsbj" resultType="java.util.HashMap">
+            select
+            (SELECT ifnull(SUM(SWSBZS),0) FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') and xzqhdm = '440000'
+        ]]>
+        <if test="cparams!=null">
+            and zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+            AND SXLXMC='行政审批' ) xzspswbjzs,
+            (SELECT ifnull(SUM(SWSBZS),0) FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') and xzqhdm = '440000'
+        ]]>
+        <if test="cparams!=null">
+            and zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+            AND SXLXMC='公共服务') shfwswbjzs,
+            ifnull(SUM(SWSBZS),0) swbjzs FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') and xzqhdm = '440000'
+        ]]>
+        <if test="cparams!=null">
+            and zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 地市业务趋势——网上办结量 -->
+    <select id="dstrendwsbj" resultType="java.util.HashMap">
+            select
+            (SELECT ifnull(SUM(SWSBZS),0) FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') and xzqhdm <> '440000' and qyjbdm = 3
+        ]]>
+        <if test="cparams!=null">
+            and sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+            AND SXLXMC='行政审批' ) xzspswbjzs,
+
+            (SELECT ifnull(SUM(SWSBZS),0) FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') and xzqhdm <> '440000' and qyjbdm = 3
+        ]]>
+        <if test="cparams!=null">
+            and sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+            AND SXLXMC='公共服务') shfwswbjzs,
+
+            ifnull(SUM(SWSBZS),0) swbjzs FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') and xzqhdm <> '440000' and qyjbdm = 3
+        ]]>
+        <if test="cparams!=null">
+            and sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 区县业务趋势——网上办结量 -->
+    <select id="qxtrendwsbj" resultType="java.util.HashMap">
+            select
+            (SELECT ifnull(SUM(SWSBZS),0) FROM DMS_CORE_COUNT_HXTJ a
+            inner join
+            tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+            <![CDATA[
+            WHERE  a.TJRQ>= #{startTime} AND a.TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+            ]]>
+            <if test="category!=null and category!=''">
+                AND t.qybs = #{category}
+            </if>
+            <if test="cparams!=null">
+                and t.sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            AND SXLXMC='行政审批' ) xzspswbjzs,
+
+            (SELECT ifnull(SUM(SWSBZS),0) FROM DMS_CORE_COUNT_HXTJ a
+            inner join
+            tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+        <![CDATA[
+            WHERE  a.TJRQ>= #{startTime} AND a.TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+        ]]>
+            <if test="area!=null and area!='' and area==0">
+                AND a.XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+            <if test="category!=null and category!=''">
+                AND t.qybs = #{category}
+            </if>
+            <if test="cparams!=null">
+                and t.sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            AND SXLXMC='公共服务') shfwswbjzs,
+            ifnull(SUM(SWSBZS),0) swbjzs FROM DMS_CORE_COUNT_HXTJ a
+            inner join
+            tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+            <![CDATA[
+            WHERE  a.TJRQ>= #{startTime} AND a.TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+            ]]>
+        <if test="area!=null and area!='' and area==0">
+            AND a.XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+        </if>
+            <if test="category!=null and category!=''">
+                AND t.qybs = #{category}
+            </if>
+            <if test="cparams!=null">
+                and t.sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+    </select>
+
+    <!-- 全省业务量趋势 -->
+    <select id="qstrend" resultType="java.util.HashMap">
+        <![CDATA[
+            SELECT T1.tjrq,IFNULL(T1.SWBJZS,0) swbjzs, IFNULL(T2.XZSPSWBJZS,0) xzspswbjzs, IFNULL(T3.SHFWSWBJZS,0) shfwswbjzs FROM
+            (select r.repdate as tjrq,b.swbjzs as swbjzs from
+            (select repdate
+            from t_dim_date
+            where repdate >= #{startTime} and repdate <= #{endTime}) R
+            left join
+            (SELECT TJRQ,SUM(SWSBZS) SWBJZS FROM DMS_CORE_COUNT_HXTJ
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+        ]]>
+        <if test="area!=null and area!='' and area==0">
+              AND XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+        <![CDATA[
+            GROUP BY TJRQ) B
+            on r.repdate = b.tjrq) T1
+            LEFT JOIN
+            (SELECT TJRQ,SUM(SWSBZS) XZSPSWBJZS FROM DMS_CORE_COUNT_HXTJ
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+        ]]>
+            <if test="area!=null and area!='' and area==0">
+              AND XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+        <![CDATA[
+            AND SXLXMC='行政审批'
+            GROUP BY TJRQ) T2
+            ON T1.TJRQ=T2.TJRQ
+            LEFT JOIN
+            (SELECT TJRQ,SUM(SWSBZS) SHFWSWBJZS FROM DMS_CORE_COUNT_HXTJ
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+        ]]>
+            <if test="area!=null and area!='' and area==0">
+                AND XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+        <![CDATA[
+            AND SXLXMC='公共服务'
+            GROUP BY TJRQ) T3
+            ON T1.TJRQ=T3.TJRQ
+            ORDER BY T1.TJRQ
+        ]]>
+    </select>
+
+    <!-- 省级业务量趋势 -->
+    <select id="sztrend" resultType="java.util.HashMap">
+
+        SELECT T1.tjrq,IFNULL(T1.SWBJZS,0) swbjzs, IFNULL(T2.XZSPSWBJZS,0) xzspswbjzs, IFNULL(T3.SHFWSWBJZS,0) shfwswbjzs FROM
+        <![CDATA[
+        (select r.repdate as tjrq,b.swbjzs as swbjzs from
+            (select repdate
+            from t_dim_date
+            where repdate >= #{startTime} and repdate <= #{endTime}) R
+        left join
+        (SELECT TJRQ,SUM(SWSBZS) SWBJZS FROM DMS_CORE_COUNT_HXTJ
+        WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') AND XZQHDM = '440000'
+        ]]>
+        <if test="cparams!=null">
+            and zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY TJRQ) B
+        on r.repdate = b.tjrq) T1
+        LEFT JOIN
+
+        (SELECT TJRQ,SUM(SWSBZS) XZSPSWBJZS FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+        WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') AND XZQHDM = '440000' AND SXLXMC='行政审批'
+        ]]>
+        <if test="cparams!=null">
+            and zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY TJRQ) T2 ON T1.TJRQ=T2.TJRQ
+        LEFT JOIN
+
+        (SELECT TJRQ,SUM(SWSBZS) SHFWSWBJZS FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+        WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') AND XZQHDM = '440000' AND SXLXMC='公共服务'
+        ]]>
+        <if test="cparams!=null">
+            and zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY TJRQ) T3 ON T1.TJRQ=T3.TJRQ
+        ORDER BY T1.TJRQ
+
+    </select>
+
+    <!-- 地市业务量趋势 -->
+    <select id="dstrend" resultType="java.util.HashMap">
+        SELECT T1.tjrq,IFNULL(T1.SWBJZS,0) swbjzs, IFNULL(T2.XZSPSWBJZS,0) xzspswbjzs, IFNULL(T3.SHFWSWBJZS,0) shfwswbjzs FROM
+        (select r.repdate as tjrq,b.swbjzs as swbjzs from
+            (select repdate
+            from t_dim_date
+        <![CDATA[
+            where repdate >= #{startTime} and repdate <= #{endTime}) R
+        ]]>
+            left join
+            (SELECT TJRQ,SUM(SWSBZS) SWBJZS FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+            WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') and xzqhdm <> '440000' and qyjbdm = 3
+        ]]>
+            <if test="cparams!=null">
+                and sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            GROUP BY TJRQ) B
+        on R.repdate = B.tjrq) T1
+        LEFT JOIN
+
+        (SELECT TJRQ,SUM(SWSBZS) XZSPSWBJZS FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+        WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') AND SXLXMC='行政审批' and xzqhdm <> '440000' and qyjbdm = 3
+        ]]>
+        <if test="cparams!=null">
+            and sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY TJRQ) T2 ON T1.TJRQ=T2.TJRQ
+        LEFT JOIN
+
+        (SELECT TJRQ,SUM(SWSBZS) SHFWSWBJZS FROM DMS_CORE_COUNT_HXTJ
+        <![CDATA[
+        WHERE  TJRQ>= #{startTime} AND TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') AND SXLXMC='公共服务' and xzqhdm <> '440000' and qyjbdm = 3
+        ]]>
+        <if test="cparams!=null">
+            and sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY TJRQ) T3 ON T1.TJRQ=T3.TJRQ
+        ORDER BY T1.TJRQ
+    </select>
+
+    <!-- 区县业务量趋势 -->
+    <select id="qxtrend" resultType="java.util.HashMap">
+        SELECT T1.tjrq,IFNULL(T1.SWBJZS,0) swbjzs, IFNULL(T2.XZSPSWBJZS,0) xzspswbjzs, IFNULL(T3.SHFWSWBJZS,0) shfwswbjzs FROM
+        (select R.repdate as tjrq,B.SWBJZS as swbjzs from
+            (select repdate
+            from t_dim_date
+            <![CDATA[
+            where repdate >= #{startTime} and repdate <= #{endTime}) R
+            ]]>
+            left join
+                (SELECT TJRQ,SUM(SWSBZS) SWBJZS FROM DMS_CORE_COUNT_HXTJ a
+                inner join
+                tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+                <![CDATA[
+                WHERE  a.TJRQ>= #{startTime} AND a.TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+                ]]>
+                <if test="area == 0">
+                    and a.XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+                </if>
+                <if test="category!=null and category!=''">
+                    AND t.qybs = #{category}
+                </if>
+                <if test="cparams!=null">
+                    and t.sjmc in
+                    <foreach collection="cparams" item="item" index="index"
+                             open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                GROUP BY TJRQ) B
+        on R.repdate = B.tjrq) T1
+        LEFT JOIN
+
+        (SELECT TJRQ,SUM(SWSBZS) XZSPSWBJZS FROM DMS_CORE_COUNT_HXTJ a
+        inner join
+            tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+            <![CDATA[
+            WHERE  a.TJRQ>= #{startTime} AND a.TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') AND SXLXMC='行政审批'
+            ]]>
+            <if test="area == 0">
+                and a.XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+            <if test="category!=null and category!=''">
+                AND t.qybs = #{category}
+            </if>
+            <if test="cparams!=null">
+                and t.sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            GROUP BY TJRQ) T2
+        ON t1.tjrq=t2.TJRQ
+        LEFT JOIN
+
+        (SELECT TJRQ,SUM(SWSBZS) SHFWSWBJZS FROM DMS_CORE_COUNT_HXTJ a
+        inner join
+            tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+            <![CDATA[
+            WHERE a.TJRQ>= #{startTime} AND a.TJRQ<=str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T') AND SXLXMC='公共服务'
+            ]]>
+            <if test="area == 0">
+                and a.XZQHDM NOT IN(SELECT XZQHDM FROM TERCEL.t_dim_areadivide WHERE QYJBDM=4 AND QXSX=-1)
+            </if>
+            <if test="category!=null and category!=''">
+                AND t.qybs = #{category}
+            </if>
+            <if test="cparams!=null">
+                and t.sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            GROUP BY TJRQ) T3
+        ON T1.TJRQ=T3.TJRQ
+        ORDER BY T1.TJRQ
+    </select>
+
+    <select id="wywsxsRestful" resultType="java.util.Map">
+        select
+            a.zzjgmc, a.wywsxs, a.xzspsxs as sxzs, a.tjnf, a.tjyf
+        from t_tj_wywsx_sz a
+        left join dim_department b on a.zzjgmc=b.zzjgmc
+        where b.zzjgdm=#{zzjgdm}
+            and a.tjnf=#{year}  and a.tjyf &gt;= #{smonth} and a.tjyf &lt;= #{emonth}
+        order by a.tjnf asc, a.tjyf asc
+    </select>
+
+</mapper>

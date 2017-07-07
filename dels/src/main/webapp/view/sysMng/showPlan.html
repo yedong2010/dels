@@ -1,0 +1,92 @@
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li ng-click="backPlanList()" style="cursor: pointer"><a><i class="fa fa-dashboard"></i>方案管理</a></li>
+        <li class="active">查看方案</li>
+    </ol>
+    <div class="btn-group">
+        <a class="btn btn-default" style="display: none" ng-click="addUserBtn()">新增合格率</a>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <form ng-show="toggle" class="form-inline" role="form">
+
+                </form>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th datatype="UNAME" style="cursor:pointer">比率名</th>
+                        <th datatype="rol_name" style="cursor:pointer">合格率</th>
+                        <th datatype="rol_name" style="cursor:pointer">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-if="vm.items == null">
+                        <td colspan="4">
+                            <div class="text-center">
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr ng-if="vm.items != null && vm.items.length == 0">
+                        <td colspan="4">暂无数据</td>
+                    </tr>
+                    <tr ng-repeat="item in vm.items|orderBy:col:desc|filter:vm.filter|paging:vm.page.index:vm.page.size ">
+                        <td>{{$index+1}}</td>
+                        <td>{{item.name}}</td>
+                        <td>{{item.pass_level}}%</td>
+                        <td>
+                            <i data-toggle="tooltip" data-placement="top" title="编辑"><i class="btn fa fa-pencil-square-o" aria-hidden="true" data-toggle="modal" data-target="#modRateValPage" rateId={{item.id}} rateName={{item.name}} rateValue={{item.pass_level}} ng-click="getRateValue(item.pass_level)"></i></i>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal fade" id="modRateValPage" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                &times;
+                            </button>
+                            <h6 class="modal-title" id="myModalLabel">
+                                <nobr><label class="control-label">修改的合格率</label></nobr>
+                            </h6>
+                        </div>
+                        <form role="form" name="modRateForm">
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label class="control-label"><span id="ARate" style="color: blue"></span></label>
+                                    <input type="text" class="form-control" id="modRateVal" name="modRateVal" ng-model="modRateVal" ng-pattern="/^([0-9]\d?|100)$/" required>
+                                    <p ng-show="modRateForm.modRateVal.$error.pattern && modRateForm.modRateVal.$dirty" style="color:red" class="help-block">只允许输入数字0-100</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                                <button type="button" class="btn btn-primary" ng-click="modRateSub()" ng-disabled="modRateForm.$invalid">提交更改</button>
+                            </div>
+                        </form>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+            <div class="col-md-2">
+                <select ng-model="vm.page.size" class="form-control" title="每页条目数"
+                        ng-options="pageSize for pageSize in [5, 10, 20, 50]"></select>
+            </div>
+            <div class="col-md-10">
+                <uib-pagination total-items="vm.items|size" ng-model="vm.page.index" max-size="5"
+                                items-per-page="vm.page.size" class="pagination-sm pull-right" boundary-links="true"
+                                previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+                                last-text="&raquo;"></uib-pagination>
+                <span class="list-nav-num pull-right form-group">共有{{vm.items.length}}条，每页显示：{{vm.page.size}}条</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+

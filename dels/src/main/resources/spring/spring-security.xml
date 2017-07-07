@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" xmlns:security="http://www.springframework.org/schema/security"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+            http://www.springframework.org/schema/beans/spring-beans-4.0.xsd  
+            http://www.springframework.org/schema/security   
+            http://www.springframework.org/schema/security/spring-security-3.2.xsd
+            http://www.springframework.org/schema/context    
+            http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+    <!-- 定义不被拦截的资源 -->
+    <security:http security="none" pattern="/home/login" />
+    <security:http security="none" pattern="/home/verificationImg" />
+    <security:http security="none" pattern="/assets/**" />
+    <security:http security="none" pattern="/api/**" />
+    
+    <!-- 配置自定义的登录页面 -->
+    <security:http auto-config="true" entry-point-ref="myEntryPoint">
+        <security:intercept-url pattern="/**" access="ROLE_ADMIN" />
+        <!-- login-page用来指定自己定义的登录html页面， username-parameter用来指定该登陆页面中的用户名参数， password-parameter用来指定jsp页面中的用户密码参数 -->
+        <security:form-login login-page="/home/login" login-processing-url="/j_spring_security_check" username-parameter="uname"
+            password-parameter="passwd" default-target-url="/#/index" authentication-failure-handler-ref="authenticationFailureHandler"
+                authentication-success-handler-ref="authenticationSuccessHandler"/>
+        <security:logout invalidate-session="true" success-handler-ref="logoutSuccessHandler"  delete-cookies="JSESSIONID"/>
+        <!-- 防止用户登录多次 -->
+        <security:session-management>
+            <security:concurrency-control max-sessions="10" error-if-maximum-exceeded="true" expired-url="/home/login"/>
+        </security:session-management>
+    </security:http>
+    <!-- 用户验证、密码的加密验证 -->
+    <security:authentication-manager>
+        <security:authentication-provider user-service-ref="customUserDetailsService">
+            <security:password-encoder ref="passwordEncoder" />
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+
+    <!-- 通过自定义customUserDetailsService确定访问权限 -->
+    <bean class="com.dels.security.UserAuth" id="customUserDetailsService" />
+    
+    <!-- 对密码进行自定义校验 -->
+    <bean class="com.dels.security.UPEncode" id="passwordEncoder" />
+
+    <!-- 自定义登录失败处理类-->
+    <bean class="com.dels.security.LoginFailureHandler" id="authenticationFailureHandler">
+        <property name="defaultFailureUrl" value="/home/login" />
+    </bean>
+    <!-- 自定义登录成功处理类  l13595 2017/1/13 16:00-->
+    <bean class="com.dels.security.LoginSuccessHandler" id="authenticationSuccessHandler">
+        <property name="defaultTargetUrl" value="/#/indicators/welcome" />
+    </bean>
+    <!-- 自定义的EntryPoint用于自定义权限异常的处理 -->
+     <bean id="myEntryPoint" class="com.dels.security.DmsAuthenticationEntryPoint">
+        <property name="loginFormUrl" value="/home/login"/>
+    </bean>
+
+    <bean class="com.dels.security.LogoutSuccessHandler" id="logoutSuccessHandler">
+        <property name="defaultTargetUrl" value="/home/login" />
+    </bean>
+
+</beans>

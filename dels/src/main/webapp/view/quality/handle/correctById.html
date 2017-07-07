@@ -1,0 +1,43 @@
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li style="cursor: pointer" ng-click="goFeedback()"><a><i class="fa fa-dashboard"></i>数据质量修正</a></li>
+        <li class="active">反馈具体内容</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <form name="correctForm">
+                <div class="col-md-12">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th ng-bind="feedbackTitle"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td colspan="9" ng-bind="feedbackContent" ></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <textarea id="correctDesc" name="correctDesc" class="form-control" rows="6" placeholder="描述" ng-model="correctDes" ng-maxlength="500" required></textarea>
+                        <p ng-show="correctForm.correctDesc.$error.maxlength && correctForm.correctDesc.$dirty" style="color:red" class="help-block">描述最长为500字符</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-3 col-sm-1">
+                        <button type="button" class="btn btn-default" ng-click="goFeedback()">取消操作</button>
+                    </div>
+                    <div class="col-sm-offset-3 col-sm-1">
+                        <button type="submit" class="btn btn-default" ng-click="appeal()" ng-disabled="correctForm.$invalid">修正</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

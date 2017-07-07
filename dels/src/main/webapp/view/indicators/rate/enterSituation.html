@@ -1,0 +1,163 @@
+<section class="content-header">
+    <div class="btn-group">
+        <button type="button" class="btn btn-default" ng-click="togglePerspective('province')">省级</button>
+        <button type="button" class="btn btn-default" ng-click="togglePerspective('city')">地市</button>
+        <button type="button" class="btn btn-default" ng-click="togglePerspective('county')">区县</button>
+        <button type="button" class="btn btn-default" ng-click="toggle=!toggle">自定义查询</button>
+        <a class="btn btn-default"
+           href="down/excel/sxjz/{{type}}?cparams={{selection}}&category={{category}}&area={{area}}&choseYear={{choseyear}}&emonth={{emonth}}"><i
+                class="fa fa-file-excel-o"></i>导出</a>
+    </div>
+    <ol class="breadcrumb">
+        <li><i class="fa fa-dashboard"></i> 数据指标统计</li>
+        <li class="active">事项进驻统计</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+
+                <form ng-show="toggle" class="form-inline" role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="输入查询内容" ng-model="vm.filter">
+                    </div>
+
+                    <select ng-model="choseyear" class="form-control" ng-options="year for year in years"
+                            ng-change="defaultMonth();">
+                    </select>年&nbsp;&nbsp;
+                    <div ng-if="choseyear != 2016 && choseyear != 2016" style="display: inline-block;">
+                        <!--<select ng-model="$parent.smonth" class="form-control"
+                                ng-options="month for month in [] | range:1:13">
+                            <option value="">请选择</option>
+                        </select>月&nbsp;&nbsp;&#45;&#45;&nbsp;&nbsp;-->
+                        <select ng-model="$parent.emonth" class="form-control"
+                                ng-options="month for month in [] | range:smonth:maxmonth+1">
+                            <!--<option value="">请选择</option>-->
+                        </select>月&nbsp;&nbsp;
+                    </div>
+
+                    <div ng-if="choseyear == 2016 && type=='county'" style="display: inline-block;">
+                        (2016年数据不含非行政区划)
+                    </div>
+
+                    <button class="btn btn-default" ng-if="choseyear != 2016 && (type=='city'||type=='county') && rolId == 5" ng-click="open('lg');">
+                        <i class="fa fa-plus-square"></i>添加区划
+                    </button>
+                    <a ng-if="selectedNum!=null" popover-animation="true" uib-popover="{{selection|toggle}}"
+                       popover-trigger="mouseenter" popover-placement="right"
+                       popover-title="选择地市">{{selectedNum}}选择项</a>
+                    <i class="fa fa-times-circle-o" ng-if="selectedNum!=null" ng-click="clearParam();"></i>
+                    <div ng-if="choseyear != 2016 && type=='county' && rolId == 5" class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="chk" ng-click="check(chk)">不含非行政区划
+                        </label>
+                    </div>
+                    <button class="btn btn-default pull-right" ng-click="queryData();">查询</button>
+                </form>
+
+                <table class="table table-striped table-condensed table-bordered">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th class="align-left">名称</th>
+                        <th changerank datatype="bmzs" style="cursor: pointer">已进驻部门总数</th>
+                        <th changerank datatype="sxzs" style="cursor: pointer">已进驻事项总数</th>
+                        <th changerank datatype="xzspzs" style="cursor: pointer">行政审批事项数</th>
+                        <th changerank datatype="shfwzs" style="cursor: pointer">公共服务事项数</th>
+                    </tr>
+
+                    </thead>
+                    <tbody>
+                    <tr ng-if="vm.items == null">
+                        <td colspan="7">
+                            <div class="text-center">
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr ng-if="vm.items != null && vm.items.length == 0">
+                        <td colspan="7">暂无数据</td>
+                    </tr>
+                    <tr ng-repeat="item in vm.items|orderBy:col:desc|filter:vm.filter|paging:vm.page.index:vm.page.size ">
+                        <td>{{item.index}}</td>
+
+                        <td class="align-left" ng-if="type=='province'">{{item.zzjgmc}}</td>
+                        <td class="align-left" ng-if="type=='city'">{{item.sjmc}}</td>
+                        <td class="align-left" ng-if="type=='county'">{{item.xzqhqc}}</td>
+
+                        <td ng-if="type=='province'">
+                            {{item.bmzs}}
+                        </td>
+                        <td ng-if="type!='province'&&item.zzjgdm!='总计'">
+                            <!--{{item.bmzs}}-->
+                            <span ng-if="static_2016 == 1">{{item.bmzs}}</span>
+                            <a ng-if="static_2016 == 0" ng-click="goDepartmentDetail(item);" class="ng-binding ng-scope">{{item.bmzs}}</a>
+                        </td>
+                        <td ng-if="type!='province'&&item.zzjgdm=='总计'">
+                            {{item.bmzs}}
+                        </td>
+
+                        <td ng-if="item.zzjgdm!='总计'">
+                            <!--{{item.sxzs}}-->
+                            <span ng-if="static_2016 == 1">{{item.sxzs}}</span>
+                            <a ng-if="static_2016 == 0" ng-click="goBusDetail(item);" class="ng-binding ng-scope">{{item.sxzs}}</a>
+                        </td>
+                        <td ng-if="item.zzjgdm=='总计'">
+                            {{item.sxzs}}
+                        </td>
+
+                        <td>{{item.xzspzs}}</td>
+                        <td>{{item.shfwzs}}</td>
+
+                        <!--<td ng-if="type!='province'&&item.zzjgdm!='总计'">
+                            &lt;!&ndash;{{item.bmzs}}&ndash;&gt;
+                            <span ng-if="static_2016 == 1">{{item.bmzs}}</span>
+                            <a ng-if="static_2016 == 0" ng-click="goDepartmentDetail(item);" class="ng-binding ng-scope">{{item.bmzs}}</a>
+                        </td>
+                        <td ng-if="type!='province'&&item.zzjgdm!='总计'">
+                            &lt;!&ndash;{{item.sxzs}}&ndash;&gt;
+                            <span ng-if="static_2016 == 1">{{item.sxzs}}</span>
+                            <a ng-if="static_2016 == 0" ng-click="goBusDetail(item);" class="ng-binding ng-scope">{{item.sxzs}}</a>
+                        </td>
+
+                        <td ng-if="type!='province'&&item.zzjgdm=='总计'">
+                            {{item.bmzs}}
+                        </td>
+                        <td ng-if="type!='province'&&item.zzjgdm=='总计'">
+                            {{item.sxzs}}
+                        </td>
+
+                        <td ng-if="type=='province'&&item.zzjgdm!='总计'">
+                            {{item.bmzs}}
+                        </td>
+                        <td ng-if="type=='province'&&item.zzjgdm!='总计'">
+                            &lt;!&ndash;{{item.sxzs}}&ndash;&gt;
+                            <span ng-if="static_2016 == 1">{{item.sxzs}}</span>
+                            <a ng-if="static_2016 == 0" ng-click="goBusDetail(item);" class="ng-binding ng-scope">{{item.sxzs}}</a>
+                        </td>
+
+                        <td ng-if="type=='province'&&item.zzjgdm=='总计'">
+                            {{item.sxzs}}
+                        </td>
+                        <td>{{item.xzspzs}}</td>
+                        <td>{{item.shfwzs}}</td>-->
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-2">
+                <select ng-model="vm.page.size" class="form-control" title="每页条目数"
+                        ng-options="pageSize for pageSize in [5, 10, 20, 50]"></select>
+            </div>
+            <div class="col-md-10">
+                <uib-pagination total-items="vm.items|filter:vm.filter|size" ng-model="vm.page.index" max-size="5"
+                                items-per-page="vm.page.size" class="pagination-sm pull-right" boundary-links="true"
+                                previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+                                last-text="&raquo;"></uib-pagination>
+                <span class="list-nav-num pull-right form-group">共有{{vm.items|filter:vm.filter|size}}条，每页显示：{{vm.page.size}}条</span>
+            </div>
+        </div>
+    </div>
+</section>

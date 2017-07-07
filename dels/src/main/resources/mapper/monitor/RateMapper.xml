@@ -1,0 +1,1841 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dels.dao.monitor.RateMapper">
+    <resultMap id="BaseResultMap"
+        type="com.dels.model.monitor.CommonModel">
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="sname" property="sname" jdbcType="VARCHAR" />
+        <result column="wsqlcsxs" property="wsqlcsxs" jdbcType="VARCHAR" />
+        <result column="sxzs" property="sxzs" jdbcType="VARCHAR" />
+        <result column="shfwsxzs" property="shfwsxzs" jdbcType="VARCHAR" />
+        <result column="wsqlcbll" property="wsqlcbll" jdbcType="VARCHAR" />
+        <result column="swblzs" property="swblzs" jdbcType="VARCHAR" />
+        <result column="wsqlcbjzs" property="wsqlcbjzs" jdbcType="VARCHAR" />
+        <result column="bjzs" property="bjzs" jdbcType="VARCHAR" />
+        <result column="swbll" property="swbll" jdbcType="VARCHAR" />
+        <result column="wsbjl" property="wsbjl" jdbcType="VARCHAR" />
+        <result column="pdcs0" property="pdcs0" jdbcType="INTEGER" />
+        <result column="pdcs1" property="pdcs1" jdbcType="INTEGER" />
+        <result column="pdcs2" property="pdcs2" jdbcType="INTEGER" />
+        <result column="pdcs3" property="pdcs3" jdbcType="INTEGER" />
+        <result column="pdcs" property="pdcs" jdbcType="INTEGER" />
+        <result column="zb0" property="zb0" jdbcType="VARCHAR" />
+        <result column="zb1" property="zb1" jdbcType="VARCHAR" />
+        <result column="zb2" property="zb2" jdbcType="VARCHAR" />
+        <result column="zb3" property="zb3" jdbcType="VARCHAR" />
+        <result column="shfwswblzs" property="shfwswblzs"
+            jdbcType="VARCHAR" />
+        <result column="shfwbjzs" property="shfwbjzs" jdbcType="VARCHAR" />
+    </resultMap>
+    <!-- 获取指定年份指定月份的省级的三率一数 -->
+    <select id="szslys" resultMap="BaseResultMap">
+        select a.zzjgmc as name,
+        a.zzjgjc as sname,
+        ifnull(c.wsqlcsxs,0) as wsqlcsxs,
+        ifnull(c.sxzs,0) as sxzs,
+        ifnull(c.shfwsxzs,0) as shfwsxzs,
+        ifnull(c.wsqlcbll,0) as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.zzjgmc,
+        a.zzjgjc,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_SZ a
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="cparams!=null">
+            and a.zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        and left(a.zzjgmc, 3) = '广东省'
+        group by a.zzjgmc,a.zzjgjc
+        ) a
+        left join
+        (SELECT zzjgmc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_SZ WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.zzjgmc=b.zzjgmc
+        left join
+        (select zzjgmc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_SZ
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.zzjgmc=c.zzjgmc
+        left join dim_province_order o on a.zzjgmc=o.name
+        order by o.order
+    </select>
+    <!-- 获取指定年份指定月份的地市的三率一数 -->
+    <select id="dsslys" resultMap="BaseResultMap">
+        select a.sjmc as name,
+        a.sjmc as sname,
+        ifnull(c.wsqlcsxs,0) as wsqlcsxs,
+        ifnull(c.sxzs,0) as sxzs,
+        ifnull(c.shfwsxzs,0) as shfwsxzs,
+        ifnull(c.wsqlcbll,0) as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.sjmc,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_DS a
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="cparams!=null">
+            and a.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        group by a.sjmc
+        ) a
+        left join
+        (SELECT sjmc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_DS WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.sjmc=b.sjmc
+        left join
+        (
+        select sjmc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_DS
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.sjmc=c.sjmc
+        left join dim_city_order c on a.sjmc=c.name
+        order by c.seq
+    </select>
+    <!-- 获取指定年份指定月份的区县的三率一数 -->
+    <select id="qxslys" resultMap="BaseResultMap">
+        select a.xzqhqc as name,
+        a.xzqhqc as sname,
+        ifnull(c.wsqlcsxs,0) as wsqlcsxs,
+        ifnull(c.sxzs,0) as sxzs,
+        ifnull(c.shfwsxzs,0) as shfwsxzs,
+        ifnull(c.wsqlcbll,0) as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.xzqhqc,t.xzqhdm,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_QX a
+        inner join
+        tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+        <if test="area!=null and area!='' and area==0">
+            AND t.qxsx!=-1
+        </if>
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="category!=null and category!=''">
+            AND t.qybs = #{category}
+        </if>
+        <if test="cparams!=null">
+            AND t.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        group by a.xzqhqc,t.xzqhdm
+        ) a
+        left join
+        (SELECT xzqhqc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_QX WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.xzqhqc=b.xzqhqc
+        left join
+        (
+        select xzqhqc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_QX
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.xzqhqc=c.xzqhqc
+        order by a.xzqhdm
+    </select>
+
+    <!-- 所需获取指定年份的往年三率一数静态数据 -->
+    <select id="previousData" resultMap="BaseResultMap">
+        select name,sname,wsqlcsxs,wsqlcbll,sxzs,shfwsxzs,swblzs,bjzs,swbll,wsbjl,wsqlcbjzs,pdcs0,zb0,pdcs1,zb1,pdcs2,zb2,pdcs3,zb3,shfwswblzs,shfwbjzs
+        from static_slys where stype=#{type} and year=#{year}
+        <if test="cparams!=null">
+            and name in
+            <foreach collection="cparams" item="item" index="index"
+                open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 下载所需获取指定年份指定月份的省级的三率一数 -->
+    <select id="szslysdown" resultMap="BaseResultMap">
+        select a.zzjgmc as name,
+        a.zzjgjc as sname,
+        ifnull(c.wsqlcsxs,0) as wsqlcsxs,
+        ifnull(c.sxzs,0) as sxzs,
+        ifnull(c.shfwsxzs,0) as shfwsxzs,
+        ifnull(c.wsqlcbll,'--') as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,'--') as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,'--') as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,'--') as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,'--') as zb3
+        from (select a.zzjgmc,
+        a.zzjgjc,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),'--') as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), '--') as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_SZ a
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="cparams!=null">
+            and a.zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        and left(a.zzjgmc, 3) = '广东省'
+        group by a.zzjgmc,a.zzjgjc
+        ) a
+        left join
+        (SELECT zzjgmc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb3
+        FROM T_TJ_PD_SZ WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.zzjgmc=b.zzjgmc
+        left join
+        (select zzjgmc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,'--') as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_SZ
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.zzjgmc=c.zzjgmc
+        left join dim_province_order o on a.zzjgmc=o.name
+        order by o.order
+    </select>
+    <!-- 下载所需获取指定年份指定月份的地市的三率一数 -->
+    <select id="dsslysdown" resultMap="BaseResultMap">
+        select a.sjmc as name,
+        a.sjmc as sname,
+        ifnull(c.wsqlcsxs,0) as wsqlcsxs,
+        ifnull(c.sxzs,0) as sxzs,
+        ifnull(c.shfwsxzs,0) as shfwsxzs,
+        ifnull(c.wsqlcbll,0) as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.sjmc,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),'--') as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), '--') as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_DS a
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="cparams!=null">
+            and a.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        group by a.sjmc
+        ) a
+        left join
+        (SELECT sjmc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb3
+        FROM T_TJ_PD_DS WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.sjmc=b.sjmc
+        left join
+        (
+        select sjmc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_DS
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.sjmc=c.sjmc
+        left join dim_city_order c on a.sjmc=c.name
+        order by c.seq
+    </select>
+    <!-- 下载所需获取指定年份指定月份的区县的三率一数 -->
+    <select id="qxslysdown" resultMap="BaseResultMap">
+        select a.xzqhqc as name,
+        a.xzqhqc as sname,
+        ifnull(c.wsqlcsxs,0) as wsqlcsxs,
+        ifnull(c.sxzs,0) as sxzs,
+        ifnull(c.shfwsxzs,0) as shfwsxzs,
+        ifnull(c.wsqlcbll,0) as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.xzqhqc,t.xzqhdm,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),'--') as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), '--') as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_QX a
+        inner join
+        tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+        <if test="area!=null and area!='' and area==0">
+            AND t.qxsx!=-1
+        </if>
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="category!=null and category!=''">
+            AND t.qybs = #{category}
+        </if>
+        <if test="cparams!=null">
+            AND t.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        group by a.xzqhqc,t.xzqhdm
+        ) a
+        left join
+        (SELECT xzqhqc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),'--') as zb3
+        FROM T_TJ_PD_QX WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.xzqhqc=b.xzqhqc
+        left join
+        (
+        select xzqhqc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_QX
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.xzqhqc=c.xzqhqc
+        order by a.xzqhdm
+    </select>
+    <!-- 获取省级指定年份和月份、部门的网上全流程事项数详情 -->
+    <select id="szwsqlcsxsxq" resultType="java.util.HashMap">
+        SELECT
+        sxbm,sxmc,sbwsbssd,pdcs,sxlxmc FROM DMS_SXWD_HISTORY WHERE
+        FWSXZT='PUBLISHED'
+        <if test="ifsxzs == 2">
+            AND SXLXMC='公共服务'
+        </if>
+        <if test="ifsxzs != 2">
+            AND SXLXMC='行政审批'
+        </if>
+        AND NF = #{choseYear} AND YF = #{emonth}
+        <if test="ifsxzs == 0">
+            AND SBWSBSSD=3
+        </if>
+        AND QYJBDM=2
+        AND ZZJGMC=#{name}
+    </select>
+
+    <!-- 获取地市指定年份、地市的网上全流程事项数详情 -->
+    <select id="dswsqlcsxsxq" resultType="java.util.HashMap">
+        SELECT
+        sxbm,sxmc,sbwsbssd,pdcs,sxlxmc FROM DMS_SXWD_HISTORY WHERE
+        FWSXZT='PUBLISHED'
+        <if test="ifsxzs == 2">
+            AND SXLXMC='公共服务'
+        </if>
+        <if test="ifsxzs != 2">
+            AND SXLXMC='行政审批'
+        </if>
+        AND NF = #{choseYear} AND YF = #{emonth}
+        <if test="ifsxzs == 0">
+            AND SBWSBSSD=3
+        </if>
+        AND QYJBDM=3
+        AND SJMC=#{name}
+    </select>
+
+    <!-- 获取区县指定年份、区县的网上全流程事项数详情 -->
+    <select id="qxwsqlcsxsxq" resultType="java.util.HashMap">
+        SELECT
+        sxbm,sxmc,sbwsbssd,pdcs,sxlxmc FROM DMS_SXWD_HISTORY WHERE
+        FWSXZT='PUBLISHED'
+        <if test="ifsxzs == 2">
+            AND SXLXMC='公共服务'
+        </if>
+        <if test="ifsxzs != 2">
+            AND SXLXMC='行政审批'
+        </if>
+        AND NF = #{choseYear} AND YF = #{emonth}
+        <if test="ifsxzs == 0">
+            AND SBWSBSSD=3
+        </if>
+        AND QYJBDM=4
+        AND XZQHQC=#{name}
+    </select>
+
+    <!--获取指定年份指定月份的省级的三率一数总计 -->
+    <select id="szslyszj" resultMap="BaseResultMap">
+        SELECT
+        '广东省' as sjmc, #{year} as tjnf,
+        ifnull(sum(c.wsqlcsxs),0) as wsqlcsxs,
+        ifnull(sum(c.sxzs),0) as sxzs,
+        ifnull(sum(c.shfwsxzs),0) as shfwsxzs,
+        ifnull(sum(c.wsqlcsxs)*100/sum(c.sxzs),0) as wsqlcbll,
+        ifnull(sum(c.swblzs),0) as swblzs,
+        ifnull(sum(c.bjzs),0) as bjzs,
+        ifnull(sum(c.swblzs)*100/sum(c.bjzs),0) as swbll,
+        ifnull(sum(c.wsqlcbjzs),0) as wsqlcbjzs,
+        ifnull(sum(c.wsqlcbjzs)*100/sum(c.bjzs),0) as wsbjl,
+        ifnull(sum(c.pdcs),0) as pdcs,
+        ifnull(sum(c.pdcs0),0) as pdcs0,
+        ifnull(sum(c.pdcs0)*100/sum(c.pdcs),100) as zb0,
+        ifnull(sum(c.pdcs1),0) as pdcs1,
+        ifnull(sum(c.pdcs1)*100/sum(c.pdcs),100) as zb1,
+        ifnull(sum(c.pdcs2),0) as pdcs2,
+        ifnull(sum(c.pdcs2)*100/sum(c.pdcs),100) as zb2,
+        ifnull(sum(c.pdcs3),0) as pdcs3,
+        ifnull(sum(c.pdcs3)*100/sum(c.pdcs),100) as zb3,
+        ifnull(sum(c.shfwswblzs),0) as shfwswblzs,
+        ifnull(sum(c.shfwbjzs),0) as shfwbjzs
+        from
+        (select a.zzjgmc as name,
+        a.zzjgjc as sname,
+        ifnull(c.wsqlcsxs,0)as wsqlcsxs,
+        ifnull(c.sxzs,0)as sxzs,
+        ifnull(c.shfwsxzs,0)as shfwsxzs,
+        ifnull(c.wsqlcbll,0)as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.zzjgmc,
+        a.zzjgjc,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_SZ a
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="cparams!=null">
+            and a.zzjgmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        and left(a.zzjgmc, 3) = '广东省'
+        group by a.zzjgmc,a.zzjgjc
+        ) a
+        left join
+        (SELECT zzjgmc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_SZ WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.zzjgmc=b.zzjgmc
+        left join
+        (select zzjgmc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_SZ
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.zzjgmc=c.zzjgmc
+        ) c
+    </select>
+
+    <!--获取指定年份指定月份指定区域的地市的三率一数总计 -->
+    <select id="dsslyszj" resultMap="BaseResultMap">
+        SELECT
+        #{year} as tjnf,
+        ifnull(sum(d.wsqlcsxs),0) as wsqlcsxs,
+        ifnull(sum(d.sxzs),0) as sxzs,
+        ifnull(sum(d.shfwsxzs),0) as shfwsxzs,
+        ifnull(sum(d.wsqlcsxs)*100/sum(d.sxzs),0) as wsqlcbll,
+        ifnull(sum(d.swblzs),0) as swblzs,
+        ifnull(sum(d.bjzs),0) as bjzs,
+        ifnull(sum(d.swblzs)*100/sum(d.bjzs),0) as swbll,
+        ifnull(sum(d.wsqlcbjzs),0) as wsqlcbjzs,
+        ifnull(sum(d.wsqlcbjzs)*100/sum(d.bjzs),0) as wsbjl,
+        ifnull(sum(d.pdcs),0) as pdcs,
+        ifnull(sum(d.pdcs0),0) as pdcs0,
+        ifnull(sum(d.pdcs0)*100/sum(d.pdcs),100) as zb0,
+        ifnull(sum(d.pdcs1),0) as pdcs1,
+        ifnull(sum(d.pdcs1)*100/sum(d.pdcs),100) as zb1,
+        ifnull(sum(d.pdcs2),0) as pdcs2,
+        ifnull(sum(d.pdcs2)*100/sum(d.pdcs),100) as zb2,
+        ifnull(sum(d.pdcs3),0) as pdcs3,
+        ifnull(sum(d.pdcs3)*100/sum(d.pdcs),100) as zb3,
+        ifnull(sum(d.shfwswblzs),0) as shfwswblzs,
+        ifnull(sum(d.shfwbjzs),0) as shfwbjzs
+        from
+        (select a.sjmc as name,
+        a.sjmc as sname,
+        ifnull(c.wsqlcsxs,0)as wsqlcsxs,
+        ifnull(c.sxzs,0)as sxzs,
+        ifnull(c.shfwsxzs,0)as shfwsxzs,
+        ifnull(c.wsqlcbll,0)as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.sjmc,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_DS a
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="cparams!=null">
+            and a.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        group by a.sjmc
+        ) a
+        left join
+        (SELECT sjmc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_DS WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.sjmc=b.sjmc
+        left join
+        (
+        select sjmc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_DS
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.sjmc=c.sjmc
+        )as d
+    </select>
+
+    <!--获取指定年份指定月份的区县的三率一数总计 -->
+    <select id="qxslyszj" resultMap="BaseResultMap">
+        SELECT
+        #{year} as tjnf,
+        ifnull(sum(d.wsqlcsxs),0) as wsqlcsxs,
+        ifnull(sum(d.sxzs),0) as sxzs,
+        ifnull(sum(d.shfwsxzs),0) as shfwsxzs,
+        ifnull(sum(d.wsqlcsxs)*100/sum(d.sxzs),0) as wsqlcbll,
+        ifnull(sum(d.swblzs),0) as swblzs,
+        ifnull(sum(d.bjzs),0) as bjzs,
+        ifnull(sum(d.swblzs)*100/sum(d.bjzs),0) as swbll,
+        ifnull(sum(d.wsqlcbjzs),0) as wsqlcbjzs,
+        ifnull(sum(d.wsqlcbjzs)*100/sum(d.bjzs),0) as wsbjl,
+        ifnull(sum(d.pdcs),0) as pdcs,
+        ifnull(sum(d.pdcs0),0) as pdcs0,
+        ifnull(sum(d.pdcs0)*100/sum(d.pdcs),100) as zb0,
+        ifnull(sum(d.pdcs1),0) as pdcs1,
+        ifnull(sum(d.pdcs1)*100/sum(d.pdcs),100) as zb1,
+        ifnull(sum(d.pdcs2),0) as pdcs2,
+        ifnull(sum(d.pdcs2)*100/sum(d.pdcs),100) as zb2,
+        ifnull(sum(d.pdcs3),0) as pdcs3,
+        ifnull(sum(d.pdcs3)*100/sum(d.pdcs),100) as zb3,
+        ifnull(sum(d.shfwswblzs),0) as shfwswblzs,
+        ifnull(sum(d.shfwbjzs),0) as shfwbjzs
+        from
+        (select a.xzqhqc as name,
+        a.xzqhqc as sname,
+        ifnull(c.wsqlcsxs,0)as wsqlcsxs,
+        ifnull(c.sxzs,0)as sxzs,
+        ifnull(c.shfwsxzs,0)as shfwsxzs,
+        ifnull(c.wsqlcbll,0)as wsqlcbll,
+        a.swblzs,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        a.wsqlcbjzs,
+        a.shfwswblzs,
+        a.shfwbjzs,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.pdcs0,0) as pdcs0,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.pdcs1,0) as pdcs1,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.pdcs2,0) as pdcs2,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.pdcs3,0) as pdcs3,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.xzqhqc,
+        ifnull(sum(a.SWBJZS), 0) as swblzs,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl,
+        ifnull(sum(a.WSQLCBJZS), 0) as wsqlcbjzs,
+        ifnull(sum(a.SHFWSWBJZS),0) as shfwswblzs,
+        ifnull(sum(a.SHFWBJZS),0) as shfwbjzs
+        from tercel.T_TJ_SANLV_MX_QX a
+        inner join
+        tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+        <if test="area!=null and area!='' and area==0">
+            AND t.qxsx!=-1
+        </if>
+        where a.tjnf = #{year}
+        <![CDATA[
+              and a.tjyf >= #{smonth}
+              and a.tjyf <= #{emonth}
+     ]]>
+        <if test="category!=null and category!=''">
+            AND t.qybs = #{category}
+        </if>
+        <if test="cparams!=null">
+            AND t.sjmc in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        group by a.xzqhqc
+        ) a
+        left join
+        (SELECT xzqhqc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0,0) as pdcs0,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1,0) as pdcs1,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2,0) as pdcs2,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3,0) as pdcs3,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_QX WHERE tjnf=#{year} and tjyf=#{emonth}
+        ) b
+        on a.xzqhqc=b.xzqhqc
+        left join
+        (
+        select xzqhqc,
+        ifnull(WSQLCSXS,0) as wsqlcsxs,
+        ifnull(sxzs,0) as sxzs,
+        ifnull(shfwsxzs,0) as shfwsxzs,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_QX
+        where tjnf=#{year} and tjyf=#{emonth}
+        ) c
+        on a.xzqhqc=c.xzqhqc
+        )as d
+    </select>
+    <!-- 获取省级的事项进驻 -->
+    <select id="szsxjz" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'province' AND zzjgmc != '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'province' AND zzjgmc != '总计'
+        以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT A.zzjgmc,A.zzjgjc,
+            IFNULL(C.C,0) AS sxzs,
+            IFNULL(D.C,0) AS
+            xzspzs,
+            IFNULL(E.C,0) AS shfwzs FROM
+            (SELECT
+            D.ZZJGDM,D.ZZJGMC,D.ZZJGJC,O.ORDER FROM DIM_DEPARTMENT D LEFT
+            JOIN
+            dim_province_order O ON D.ZZJGMC=O.NAME WHERE
+            XZQHDM='440000'
+            <if test="cparams!=null">
+                and D.ZZJGMC in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ) A
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE
+            FWSXZT='PUBLISHED' AND QYJBDM=2 AND XZQHDM='440000' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY
+            ZZJGMC) C ON A.ZZJGMC=C.ZZJGMC
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1)
+            C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND QYJBDM=2 AND
+            XZQHDM='440000' AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY ZZJGMC) D ON
+            A.ZZJGMC=D.ZZJGMC
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1) C FROM
+            DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND QYJBDM=2 AND
+            XZQHDM='440000' AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY ZZJGMC) E ON
+            A.ZZJGMC=E.ZZJGMC
+            ORDER BY A.ORDER
+        </if>
+    </select>
+
+    <!-- 获取地市的事项进驻 -->
+    <select id="dssxjz" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'city' AND sjmc != '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'city' AND sjmc != '总计'
+        以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT A.sjmc,
+            IFNULL(B.C,0) AS bmzs,
+            IFNULL(C.C,0) AS sxzs,
+            IFNULL(D.C,0) AS xzspzs,
+            IFNULL(E.C,0) AS shfwzs FROM
+            (SELECT
+            MIN(XZQHDM) XZQHDM,SJMC FROM t_dim_areadivide WHERE <![CDATA[ SJMC<>'广东省']]>
+            AND QYJBDM=3 GROUP BY SJMC ) A
+            LEFT JOIN
+            (SELECT SJMC,COUNT(1) C
+            FROM DIM_DEPARTMENT WHERE QYJBDM=3 GROUP BY SJMC) B ON
+            A.SJMC=B.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY
+            WHERE FWSXZT='PUBLISHED' AND QYJBDM=3 AND NF = #{choseYear} AND YF = #{emonth} GROUP BY SJMC) C ON
+            A.SJMC=C.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY
+            WHERE FWSXZT='PUBLISHED' AND QYJBDM=3 AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY
+            SJMC) D ON A.SJMC=D.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY
+            WHERE FWSXZT='PUBLISHED' AND QYJBDM=3 AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth}
+            GROUP BY SJMC) E ON A.SJMC=E.SJMC
+            <if test="cparams!=null">
+                WHERE A.SJMC in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ORDER BY A.XZQHDM
+        </if>
+    </select>
+
+    <!-- 获取区县的事项进驻 -->
+    <select id="qxsxjz" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'county' AND xzqhqc != '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'county' AND xzqhqc != '总计'
+        以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT A.xzqhqc,
+            IFNULL(B.C,0) AS bmzs,
+            IFNULL(C.C,0) AS sxzs,
+            IFNULL(D.C,0) AS xzspzs,
+            IFNULL(E.C,0) AS shfwzs FROM
+            (SELECT
+            XZQHDM,XZQHQC FROM tercel.t_dim_areadivide t WHERE t.qyjbdm=4
+            <if test="area!=null and area!='' and area==0">
+                AND t.qxsx!=-1
+            </if>
+            ) A
+            LEFT JOIN
+            (SELECT XZQHQC,COUNT(1) C FROM DIM_DEPARTMENT WHERE
+            QYJBDM=4 GROUP BY XZQHQC) B ON A.XZQHQC=B.XZQHQC
+            LEFT JOIN
+            (
+            SELECT XZQHQC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED'
+            AND QYJBDM=4 AND NF = #{choseYear} AND YF = #{emonth} GROUP BY XZQHQC) C ON A.XZQHQC=C.XZQHQC
+            LEFT JOIN
+            (
+            SELECT XZQHQC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED'
+            AND QYJBDM=4 AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY XZQHQC) D ON
+            A.XZQHQC=D.XZQHQC
+            LEFT JOIN
+            ( SELECT XZQHQC,COUNT(1) C FROM
+            DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND QYJBDM=4 AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth}
+            GROUP BY XZQHQC) E ON A.XZQHQC=E.XZQHQC
+            inner join
+            tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+            <if test="area!=null and area!='' and area==0">
+                AND t.qxsx!=-1
+            </if>
+            <if test="category!=null and category!=''">
+                WHERE t.qybs = #{category}
+            </if>
+            <if test="cparams!=null">
+                AND t.sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ORDER BY A.XZQHDM
+        </if>
+    </select>
+
+    <!-- 下载省级的事项进驻 -->
+    <select id="szsxjzdown" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'province' AND zzjgmc != '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'province' AND zzjgmc != '总计'
+        以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT A.zzjgmc,A.zzjgjc,
+            IFNULL(C.C,0) AS sxzs,
+            IFNULL(D.C,0) AS
+            xzspzs,
+            IFNULL(E.C,0) AS shfwzs FROM
+            (SELECT
+            D.ZZJGDM,D.ZZJGMC,D.ZZJGJC,O.ORDER FROM DIM_DEPARTMENT D LEFT
+            JOIN
+            dim_province_order O ON D.ZZJGMC=O.NAME WHERE
+            XZQHDM='440000'
+            <if test="cparams!=null">
+                and D.ZZJGMC in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ) A
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE
+            FWSXZT='PUBLISHED' AND QYJBDM=2 AND XZQHDM='440000' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY
+            ZZJGMC) C ON A.ZZJGMC=C.ZZJGMC
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1)
+            C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND QYJBDM=2 AND
+            XZQHDM='440000' AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY ZZJGMC) D ON
+            A.ZZJGMC=D.ZZJGMC
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1) C FROM
+            DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND QYJBDM=2 AND
+            XZQHDM='440000' AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY ZZJGMC) E ON
+            A.ZZJGMC=E.ZZJGMC
+            ORDER BY A.ORDER
+
+        </if>
+    </select>
+
+    <!-- 下载地市的事项进驻 -->
+    <select id="dssxjzdown" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'city' AND sjmc != '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'city' AND sjmc != '总计'
+        以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT A.sjmc,
+            IFNULL(B.C,0) AS bmzs,
+            IFNULL(C.C,0) AS sxzs,
+            IFNULL(D.C,0) AS xzspzs,
+            IFNULL(E.C,0) AS shfwzs FROM
+            (SELECT
+            MIN(XZQHDM) XZQHDM,SJMC FROM t_dim_areadivide WHERE <![CDATA[ SJMC<>'广东省']]>
+            AND QYJBDM=3 GROUP BY SJMC ) A
+            LEFT JOIN
+            (SELECT SJMC,COUNT(1) C
+            FROM DIM_DEPARTMENT WHERE QYJBDM=3 GROUP BY SJMC) B ON
+            A.SJMC=B.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY
+            WHERE FWSXZT='PUBLISHED' AND QYJBDM=3 AND NF = #{choseYear} AND YF = #{emonth} GROUP BY SJMC) C ON
+            A.SJMC=C.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY
+            WHERE FWSXZT='PUBLISHED' AND QYJBDM=3 AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY
+            SJMC) D ON A.SJMC=D.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY
+            WHERE FWSXZT='PUBLISHED' AND QYJBDM=3 AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth}
+            GROUP BY SJMC) E ON A.SJMC=E.SJMC
+            <if test="cparams!=null">
+                WHERE A.SJMC in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ORDER BY A.XZQHDM
+        </if>
+    </select>
+
+    <!-- 下载区县的事项进驻 -->
+    <select id="qxsxjzdown" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'county' AND xzqhqc != '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'county' AND xzqhqc != '总计'
+        以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT A.xzqhqc,
+            IFNULL(B.C,0) AS bmzs,
+            IFNULL(C.C,0) AS sxzs,
+            IFNULL(D.C,0) AS xzspzs,
+            IFNULL(E.C,0) AS shfwzs FROM
+            (SELECT
+            XZQHDM,XZQHQC FROM tercel.t_dim_areadivide t WHERE t.qyjbdm=4
+            <if test="area!=null and area!='' and area==0">
+                AND t.qxsx!=-1
+            </if>
+            ) A
+            LEFT JOIN
+            (SELECT XZQHQC,COUNT(1) C FROM DIM_DEPARTMENT WHERE
+            QYJBDM=4 GROUP BY XZQHQC) B ON A.XZQHQC=B.XZQHQC
+            LEFT JOIN
+            (
+            SELECT XZQHQC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED'
+            AND QYJBDM=4 AND NF = #{choseYear} AND YF = #{emonth} GROUP BY XZQHQC) C ON A.XZQHQC=C.XZQHQC
+            LEFT JOIN
+            (
+            SELECT XZQHQC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED'
+            AND QYJBDM=4 AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY XZQHQC) D ON
+            A.XZQHQC=D.XZQHQC
+            LEFT JOIN
+            ( SELECT XZQHQC,COUNT(1) C FROM
+            DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND QYJBDM=4 AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth}
+            GROUP BY XZQHQC) E ON A.XZQHQC=E.XZQHQC
+            inner join
+            tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+            <if test="area!=null and area!='' and area==0">
+                AND t.qxsx!=-1
+            </if>
+            <if test="category!=null and category!=''">
+                WHERE t.qybs = #{category}
+            </if>
+            <if test="cparams!=null">
+                AND t.sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ORDER BY A.XZQHDM
+        </if>
+    </select>
+    <!-- 获取省级的事项进驻总计 -->
+    <select id="szsxjzzj" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'province' AND zzjgmc = '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'province' AND zzjgmc = '总计'  以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT ifnull(sum(d.sxzs),0) as sxzs,ifnull(sum(d.xzspzs),0) as
+            xzspzs,ifnull(sum(d.shfwzs),0) as shfwzs
+            from
+            (
+            SELECT
+            A.zzjgmc,A.zzjgjc,
+            IFNULL(C.C,0) AS sxzs,
+            IFNULL(D.C,0) AS xzspzs,
+            IFNULL(E.C,0) AS shfwzs FROM
+            (SELECT
+            D.ZZJGDM,D.ZZJGMC,D.ZZJGJC,O.ORDER FROM DIM_DEPARTMENT D LEFT
+            JOIN
+            dim_province_order O ON D.ZZJGMC=O.NAME WHERE
+            XZQHDM='440000'
+            <if test="cparams!=null">
+                and zzjgmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ) A
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE
+            FWSXZT='PUBLISHED' AND QYJBDM=2 AND XZQHDM='440000' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY
+            ZZJGMC) C ON A.ZZJGMC=C.ZZJGMC
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1)
+            C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND QYJBDM=2 AND
+            XZQHDM='440000' AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY ZZJGMC) D ON
+            A.ZZJGMC=D.ZZJGMC
+            LEFT JOIN
+            ( SELECT ZZJGMC,COUNT(1) C FROM
+            DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND QYJBDM=2 AND
+            XZQHDM='440000' AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY ZZJGMC) E ON
+            A.ZZJGMC=E.ZZJGMC
+            ORDER BY A.ORDER
+            ) as d
+        </if>
+    </select>
+
+    <!-- 获取地市的事项进驻总计 -->
+    <select id="dssxjzzj" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'city' AND sjmc = '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'city' AND sjmc = '总计' 以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT ifnull(sum(d.bmzs),0) as bmzs,ifnull(sum(d.sxzs),0) as
+            sxzs,ifnull(sum(d.xzspzs),0) as xzspzs,ifnull(sum(d.shfwzs),0)
+            as shfwzs
+            from
+            (
+            SELECT A.sjmc,
+            IFNULL(B.C,0) AS bmzs,
+            IFNULL(C.C,0)
+            AS sxzs,
+            IFNULL(D.C,0) AS xzspzs,
+            IFNULL(E.C,0) AS shfwzs FROM
+            (SELECT MIN(XZQHDM) XZQHDM,SJMC FROM t_dim_areadivide WHERE <![CDATA[ SJMC<>'广东省']]>
+            AND QYJBDM=3 GROUP BY SJMC ) A
+            LEFT JOIN
+            (SELECT SJMC,COUNT(1) C
+            FROM DIM_DEPARTMENT WHERE QYJBDM=3 GROUP BY SJMC) B
+            ON
+            A.SJMC=B.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY
+            WHERE FWSXZT='PUBLISHED' AND
+            QYJBDM=3 AND NF = #{choseYear} AND YF = #{emonth} GROUP BY SJMC) C ON
+            A.SJMC=C.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY
+            WHERE FWSXZT='PUBLISHED' AND
+            QYJBDM=3 AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY
+            SJMC) D ON A.SJMC=D.SJMC
+            LEFT JOIN
+            ( SELECT SJMC,COUNT(1) C FROM
+            DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND
+            QYJBDM=3 AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth}
+            GROUP BY SJMC) E ON A.SJMC=E.SJMC
+            <if test="cparams!=null">
+                WHERE A.SJMC in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ) as d
+        </if>
+    </select>
+
+    <!-- 获取区县事项进驻总计 -->
+    <select id="qxsxjzzj" resultType="java.util.HashMap">
+        <if test="choseYear == 2016">
+            SELECT * from static_sxjz WHERE stype = 'county' AND xzqhqc = '总计'
+        </if>
+        <!--SELECT * from static_sxjz WHERE stype = 'county' AND xzqhqc = '总计' 以上sql代码是因为临时需要展示2016年的静态数据，下面代码才是正常代码-->
+        <if test="choseYear != 2016">
+            SELECT ifnull(sum(d.bmzs),0) as bmzs,ifnull(sum(d.sxzs),0) as
+            sxzs,ifnull(sum(d.xzspzs),0) as xzspzs,ifnull(sum(d.shfwzs),0)
+            as shfwzs
+            from
+            (
+            SELECT A.xzqhqc,
+            IFNULL(B.C,0) AS bmzs,
+            IFNULL(C.C,0) AS sxzs,
+            IFNULL(D.C,0) AS xzspzs,
+            IFNULL(E.C,0) AS
+            shfwzs FROM
+            (SELECT XZQHDM,XZQHQC FROM tercel.t_dim_areadivide t
+            WHERE t.qyjbdm=4
+            <if test="area!=null and area!='' and area==0">
+                AND t.qxsx!=-1
+            </if>
+            ) A
+            LEFT JOIN
+            (SELECT XZQHQC,COUNT(1) C FROM DIM_DEPARTMENT WHERE
+            QYJBDM=4 GROUP BY XZQHQC)
+            B ON A.XZQHQC=B.XZQHQC
+            LEFT JOIN
+            ( SELECT
+            XZQHQC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND
+            QYJBDM=4 AND NF = #{choseYear} AND YF = #{emonth} GROUP BY XZQHQC) C ON A.XZQHQC=C.XZQHQC
+            LEFT JOIN
+            (
+            SELECT XZQHQC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED'
+            AND
+            QYJBDM=4 AND SXLXMC='行政审批' AND NF = #{choseYear} AND YF = #{emonth} GROUP BY XZQHQC) D ON
+            A.XZQHQC=D.XZQHQC
+            LEFT JOIN
+            ( SELECT XZQHQC,COUNT(1) C FROM
+            DMS_SXWD_HISTORY WHERE FWSXZT='PUBLISHED' AND
+            QYJBDM=4 AND SXLXMC='公共服务' AND NF = #{choseYear} AND YF = #{emonth}
+            GROUP BY XZQHQC) E ON
+            A.XZQHQC=E.XZQHQC
+            inner join
+            tercel.t_dim_areadivide t on
+            a.xzqhqc = t.xzqhqc and t.qyjbdm='4'
+            <if test="area!=null and area!='' and area==0">
+                AND t.qxsx!=-1
+            </if>
+            <if test="category!=null and category!=''">
+                WHERE t.qybs = #{category}
+            </if>
+            <if test="cparams!=null">
+                AND t.sjmc in
+                <foreach collection="cparams" item="item" index="index"
+                         open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            ) as d
+        </if>
+    </select>
+    <!-- 获取指定省级事项进驻中——已进驻事项详情 -->
+    <select id="szsxjzsxxq" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE ZZJGMC=#{name} AND
+        QYJBDM=2 AND
+        FWSXZT='PUBLISHED' AND
+        NF = #{year} AND YF = #{emonth}
+        <if test="sxlxmc!='全部' and sxlxmc!=''">
+            AND sxlxmc=#{sxlxmc}
+        </if>
+    </select>
+
+    <!-- 获取指定省级事项进驻中——已进驻事项详情——下载 -->
+    <select id="szsxjzsxxqdown" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE ZZJGMC=#{name} AND
+        QYJBDM=2 AND
+        FWSXZT='PUBLISHED' AND
+        NF = #{year} AND YF = #{emonth}
+        <if test="sxlxmc!='全部' and sxlxmc!=''">
+            AND sxlxmc=#{sxlxmc}
+        </if>
+    </select>
+
+    <!-- 获取指定地市事项进驻中——已进驻事项详情 -->
+    <select id="dssxjzsxxq" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE SJMC=#{name} AND
+        QYJBDM=3 AND
+        FWSXZT='PUBLISHED' AND
+        NF = #{year} AND YF = #{emonth}
+        <if test="sxlxmc!='全部' and sxlxmc!=''">
+            AND sxlxmc=#{sxlxmc}
+        </if>
+    </select>
+
+    <!-- 获取指定地市事项进驻中——已进驻事项详情——下载 -->
+    <select id="dssxjzsxxqdown" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE SJMC=#{name} AND
+        QYJBDM=3 AND
+        FWSXZT='PUBLISHED' AND
+        NF = #{year} AND YF = #{emonth}
+        <if test="sxlxmc!='全部' and sxlxmc!=''">
+            AND sxlxmc=#{sxlxmc}
+        </if>
+    </select>
+
+    <!-- 获取指定区县事项进驻中——已进驻事项详情 -->
+    <select id="qxsxjzsxxq" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE XZQHQC=#{name} AND
+        QYJBDM=4 AND
+        FWSXZT='PUBLISHED' AND
+        NF = #{year} AND YF = #{emonth}
+        <if test="sxlxmc!='全部' and sxlxmc!=''">
+            AND sxlxmc=#{sxlxmc}
+        </if>
+    </select>
+
+    <!-- 获取指定区县事项进驻中——已进驻事项详情——下载 -->
+    <select id="qxsxjzsxxqdown" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE XZQHQC=#{name} AND
+        QYJBDM=4 AND
+        FWSXZT='PUBLISHED' AND
+        NF = #{year} AND YF = #{emonth}
+        <if test="sxlxmc!='全部' and sxlxmc!=''">
+            AND sxlxmc=#{sxlxmc}
+        </if>
+    </select>
+
+    <!-- 获取指定地市事项进驻中——已进驻部门详情 -->
+    <select id="dssxjzbmxq" resultType="java.util.HashMap">
+        SELECT
+        zzjgdm,zzjgmc,zzjgjc,xzqhdm FROM
+        TERCEL.DIM_DEPARTMENT
+        WHERE
+        sjmc=#{name} AND
+        QYJBDM=3
+    </select>
+
+    <!-- 指定地市事项进驻中——已进驻部门详情——下载 -->
+    <select id="dssxjzbmxqdown" resultType="java.util.HashMap">
+        SELECT
+        zzjgdm,zzjgmc,zzjgjc,xzqhdm FROM
+        TERCEL.DIM_DEPARTMENT
+        WHERE
+        sjmc=#{name} AND
+        QYJBDM=3
+    </select>
+
+    <!-- 获取指定区县事项进驻中——已进驻部门详情 -->
+    <select id="qxsxjzbmxq" resultType="java.util.HashMap">
+        SELECT
+        zzjgdm,zzjgmc,zzjgjc,xzqhdm FROM
+        TERCEL.DIM_DEPARTMENT
+        WHERE
+        XZQHQC=#{name} AND
+        QYJBDM=4
+    </select>
+
+    <!-- 获取指定区县事项进驻中——已进驻部门详情——下载 -->
+    <select id="qxsxjzbmxqdown" resultType="java.util.HashMap">
+        SELECT
+        zzjgdm,zzjgmc,zzjgjc,xzqhdm FROM
+        TERCEL.DIM_DEPARTMENT
+        WHERE
+        XZQHQC=#{name} AND
+        QYJBDM=4
+    </select>
+
+    <!-- 获取指定省级进驻事项按跑动次数——三率一数》进驻事项详情 -->
+    <select id="szsxjzBypd" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE ZZJGMC = #{name} AND
+        NF = #{choseYear} AND YF = #{emonth} AND
+        QYJBDM=2 AND
+        FWSXZT='PUBLISHED'
+        AND sxlxmc='行政审批'
+        <choose>
+            <when test="pdcs!=null and pdcs!=3">
+                AND PDCS=#{pdcs}
+            </when>
+            <otherwise>
+                AND PDCS>=#{pdcs}
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 获取指定地市进驻事项按跑动次数——三率一数》进驻事项详情 -->
+    <select id="dssxjzBypd" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE SJMC=#{name} AND
+        NF=#{choseYear} AND YF=#{emonth} AND
+        QYJBDM=3 AND
+        FWSXZT='PUBLISHED'
+        AND sxlxmc='行政审批'
+        <choose>
+            <when test="pdcs!=null and pdcs!=3">
+                AND PDCS=#{pdcs}
+            </when>
+            <otherwise>
+                AND PDCS>=#{pdcs}
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 获取指定区县事项进驻中——三率一数》进驻事项详情 -->
+    <select id="qxsxjzBypd" resultType="java.util.HashMap">
+        SELECT sxbm,sxmc,zzjgjc,sbwsbssd,pdcs,sxlxmc FROM
+        TERCEL.DMS_SXWD_HISTORY
+        WHERE XZQHQC=#{name} AND
+        NF=#{choseYear} AND YF=#{emonth} AND
+        QYJBDM=4 AND
+        FWSXZT='PUBLISHED'
+        AND sxlxmc='行政审批'
+        <choose>
+            <when test="pdcs!=null and pdcs!=3">
+                AND PDCS=#{pdcs}
+            </when>
+            <otherwise>
+                AND PDCS>=#{pdcs}
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 获取指定年份，省级三率一数简化版 -->
+    <select id="szsimpleRate" resultType="java.util.HashMap">
+        select a.zzjgmc as name,
+        a.zzjgjc as sname,
+        '1' as bms,
+        ifnull(d.c,0) as sxzs,
+        ifnull(e.c,0) as zywl,
+        ifnull(c.wsqlcbll,0) as wsqlcbll,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.zzjgmc,
+        a.zzjgjc,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl
+        from tercel.T_TJ_SANLV_MX_SZ a
+        where a.tjnf = #{choseYear}
+        <![CDATA[
+        and a.tjyf >= #{smonth}
+        and a.tjyf <= #{emonth}
+        ]]>
+        and left(a.zzjgmc, 3) = '广东省'
+        group by a.zzjgmc,a.zzjgjc
+        ) a
+        left join
+        (SELECT zzjgmc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_SZ WHERE tjnf=#{choseYear} and tjyf=#{emonth}
+        ) b
+        on a.zzjgmc=b.zzjgmc
+        left join
+        (select zzjgmc,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_SZ
+        where tjnf=#{choseYear} and tjyf=#{emonth}
+        ) c
+        on a.zzjgmc=c.zzjgmc
+        left join(
+        SELECT ZZJGMC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE NF=#{choseYear} AND YF=#{emonth} AND QYJBDM=2
+        AND FWSXZT='PUBLISHED'
+        GROUP BY ZZJGMC
+        ) d on a.zzjgmc=d.zzjgmc
+        left join(
+        <![CDATA[
+        SELECT zzjgmc,SUM(BJZS) c FROM DMS_CORE_COUNT WHERE TJNF=#{choseYear} AND TJYF>=#{smonth} AND TJYF<=#{emonth} AND QYJBDM=2
+        ]]>
+        GROUP BY ZZJGMC
+        ) e on a.zzjgmc=e.zzjgmc
+        left join dim_province_order o on a.zzjgmc=o.name
+        order by o.order
+    </select>
+
+    <!-- 获取指定年份，地市三率一数简化版 -->
+    <select id="dssimpleRate" resultType="java.util.HashMap">
+        select a.sjmc as name,
+        a.sjmc as sname,
+        ifnull(d.c,0) as bms,
+        ifnull(e.c,0) as sxzs,
+        ifnull(f.c,0) as zywl,
+        ifnull(c.wsqlcbll,0) as wsqlcbll,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.sjmc,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl
+        from tercel.T_TJ_SANLV_MX_DS a
+        where a.tjnf = #{choseYear}
+        <![CDATA[
+        and a.tjyf >= #{smonth}
+        and a.tjyf <= #{emonth}
+        ]]>
+        group by a.sjmc
+        ) a
+        left join
+        (SELECT sjmc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_DS WHERE tjnf=#{choseYear} and tjyf=#{emonth}
+        ) b
+        on a.sjmc=b.sjmc
+        left join
+        (
+        select sjmc,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_DS
+        where tjnf=#{choseYear} and tjyf=#{emonth}
+        ) c
+        on a.sjmc=c.sjmc
+        left join(
+        SELECT SJMC,COUNT(1) C FROM DIM_DEPARTMENT WHERE QYJBDM=3 GROUP BY SJMC
+        ) d on a.sjmc=d.sjmc
+        left join(
+        SELECT SJMC,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE NF=#{choseYear} AND YF=#{emonth} AND QYJBDM=3
+        AND FWSXZT='PUBLISHED'
+        GROUP BY SJMC
+        ) e on a.sjmc=e.sjmc
+        left join (
+        <![CDATA[
+        SELECT sjmc,SUM(BJZS) c FROM DMS_CORE_COUNT WHERE TJNF=#{choseYear} AND TJYF>=#{smonth} AND TJYF<=#{emonth} AND QYJBDM=3
+        ]]>
+        GROUP BY sjmc
+        ) f on a.sjmc=f.sjmc
+        left join dim_city_order c on a.sjmc=c.name
+        order by c.seq
+    </select>
+
+    <!-- 获取指定年份，区县三率一数简化版 -->
+    <select id="qxsimpleRate" resultType="java.util.HashMap">
+        select a.xzqhqc as name,
+        a.xzqhqc as sname,
+        ifnull(d.c,0) as bms,
+        ifnull(e.c,0) as sxzs,
+        ifnull(f.c,0) as zywl,
+        ifnull(c.wsqlcbll,0) as wsqlcbll,
+        a.swbll,
+        a.bjzs,
+        a.wsbjl,
+        ifnull(b.pdcs,0) as pdcs,
+        ifnull(b.zb0,0.00) as zb0,
+        ifnull(b.zb1,0.00) as zb1,
+        ifnull(b.zb2,0.00) as zb2,
+        ifnull(b.zb3,0.00) as zb3
+        from (select a.xzqhqc,t.xzqhdm,
+        ifnull(sum(a.SWBJZS)*100/sum(a.BJZS),0.00) as swbll,
+        ifnull(sum(a.BJZS), 0) as bjzs,
+        ifnull(sum(a.WSQLCBJZS)*100/sum(a.BJZSR), 0.00) as wsbjl
+        from tercel.T_TJ_SANLV_MX_QX a
+        inner join
+        tercel.t_dim_areadivide t on a.xzqhqc = t.xzqhqc and t.qyjbdm=4
+        where a.tjnf = #{choseYear}
+        <![CDATA[
+        and a.tjyf >= #{smonth}
+        and a.tjyf <= #{emonth}
+        ]]>
+        group by a.xzqhqc,t.xzqhdm
+        ) a
+        left join
+        (SELECT xzqhqc,
+        ifnull(pdcs0+pdcs1+pdcs2+pdcs3,0) as pdcs,
+        ifnull(pdcs0*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb0,
+        ifnull(pdcs1*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb1,
+        ifnull(pdcs2*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb2,
+        ifnull(pdcs3*100/(pdcs0+pdcs1+pdcs2+pdcs3),0) as zb3
+        FROM T_TJ_PD_QX WHERE tjnf=#{choseYear} and tjyf=#{emonth}
+        ) b
+        on a.xzqhqc=b.xzqhqc
+        left join
+        (
+        select xzqhqc,
+        ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+        from tercel.T_TJ_SANLV_MX_QX
+        where tjnf=#{choseYear} and tjyf=#{emonth}
+        ) c
+        on a.xzqhqc=c.xzqhqc
+        left join(
+        SELECT xzqhqc,COUNT(1) C FROM DIM_DEPARTMENT WHERE QYJBDM=4 GROUP BY xzqhqc
+        ) d on a.xzqhqc=d.xzqhqc
+        left join(
+        SELECT xzqhqc,COUNT(1) C FROM DMS_SXWD_HISTORY WHERE NF=#{choseYear} AND YF=#{emonth} AND QYJBDM=4
+        AND FWSXZT='PUBLISHED'
+        GROUP BY xzqhqc
+        ) e on a.xzqhqc=e.xzqhqc
+        left join (
+        <![CDATA[
+        SELECT xzqhqc,SUM(BJZS) c FROM DMS_CORE_COUNT WHERE TJNF=#{choseYear} AND TJYF>=#{smonth} AND TJYF<=#{emonth} AND QYJBDM=4
+        ]]>
+        GROUP BY xzqhqc
+        ) f on a.xzqhqc=f.xzqhqc
+        order by a.xzqhdm
+    </select>
+
+    <!-- 获取数据指标统计——综合排名列表 -->
+    <select id="szrateRank" resultType="java.util.HashMap">
+        select zzjgmc,sum(sxzs) as sxzs, sum(zywl) as zywl, avg(wsqlcbll) as wsqlcbll, avg(swbll) as swbll, avg(wsbjl) as wsbjl,
+        avg(zb0) as zb0, avg(zb1) as zb1, avg(zb2) as zb2, round(avg(zb3)) as zb3,
+        avg(spsjysl) as spsjysl, round(avg(zfs)) as zfs
+        from t_tj_jt_zh
+        <![CDATA[
+        where tjsj >= #{startTime} and tjsj <= #{endTime}
+        ]]>
+        group by zzjgmc
+        order by zfs desc
+    </select>
+
+    <!-- 获取数据指标统计——数据监测异常情况列表 -->
+    <select id="szdataAbnormal" resultType="java.util.HashMap">
+        select zzjgmc, sum(zywl) as zywl, sum(ljycs) as ljycs, sum(gcycs) as gcycs, sum(zlycs) as zlycs, sum(nrycs) as nrycs, sum(gfycs) as gfycs
+        from t_tj_jt_zh
+        <![CDATA[
+        where tjsj >= #{startTime} and tjsj <= #{endTime}
+        ]]>
+        group by zzjgmc
+        order by zywl desc
+    </select>
+
+    <!-- 部门业务总量 -->
+    <select id="bmywzl" resultType="java.util.Map">
+        select zzjgdm,  zzjgmc, sum(bjzs) as ywzl, tjnf, tjyf from dms_core_count
+        where zzjgdm = #{zzjgdm}   and tjnf = #{year}   and tjyf &gt;= #{smonth}   and tjyf &lt;= #{emonth}
+        group by zzjgdm, zzjgmc, tjnf, tjyf
+        order by tjnf desc, tjyf desc
+    </select>
+
+    <select id="sumBMYWZL" resultType="java.lang.Integer">
+        select sum(bjzs) from dms_core_count
+        where zzjgdm = #{zzjgdm}  and tjnf = #{year} and tjyf &gt;= #{smonth} and tjyf &lt;= #{emonth}
+    </select>
+
+    <select id="bmywnl" resultType="java.util.Map">
+        select a.swbll, a.wsbjl, b.wsqlcbll, c.zzjgmc, c.zzjgdm  from (
+            select zzjgmc,
+            format(ifnull(sum(SWBJZS)*100/sum(BJZS),0.00), 2) as swbll,
+            format(ifnull(sum(WSQLCBJZS)*100/sum(BJZSR), 0.00), 2) as wsbjl
+            from t_tj_sanlv_mx_sz
+            where  tjnf=#{year}   and tjyf &gt;= #{smonth} and tjyf &lt;= #{emonth}
+            group by zzjgmc
+        ) a left join (
+            select zzjgmc, ifnull(wsqlcsxs*100/sxzs,0) as wsqlcbll
+            from t_tj_sanlv_mx_sz
+            where tjnf=#{year} and tjyf=#{emonth}
+        ) b on a.zzjgmc=b.zzjgmc
+            left join (
+            select zzjgdm,zzjgmc from dim_department
+            group by zzjgdm,zzjgmc
+        ) c on a.zzjgmc=c.zzjgmc
+        where c.zzjgdm=#{zzjgdm}
+    </select>
+
+    <!-- 省级三率一数，静态表抽取数据 -->
+    <select id="szslysStatic" resultMap="BaseResultMap">
+        select
+        name,
+        sname,
+        wsqlcsxs,
+        sxzs,
+        shfwsxzs,
+        wsqlcbll,
+        swblzs,
+        swbll,
+        bjzs,
+        wsbjl,
+        wsqlcbjzs,
+        shfwswblzs,
+        shfwbjzs,
+        pdcs,
+        pdcs0,
+        zb0,
+        pdcs1,
+        zb1,
+        pdcs2,
+        zb2,
+        pdcs3,
+        zb3
+        from t_tj_slys
+        where stype = 'province'
+        <if test="cparams!=null">
+            and name in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 地市三率一数，静态表抽取数据 -->
+    <select id="dsslysStatic" resultMap="BaseResultMap">
+        select
+        name,
+        sname,
+        wsqlcsxs,
+        sxzs,
+        shfwsxzs,
+        wsqlcbll,
+        swblzs,
+        swbll,
+        bjzs,
+        wsbjl,
+        wsqlcbjzs,
+        shfwswblzs,
+        shfwbjzs,
+        pdcs,
+        pdcs0,
+        zb0,
+        pdcs1,
+        zb1,
+        pdcs2,
+        zb2,
+        pdcs3,
+        zb3
+        from t_tj_slys
+        where stype = 'city'
+        <if test="cparams!=null">
+            and name in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 地市三率一数总计，静态表抽取数据 -->
+    <select id="dsslyszjStatic" resultMap="BaseResultMap">
+        SELECT
+        '总计' as name,
+        '总计' as sname,
+        sum(wsqlcsxs) as wsqlcsxs,
+        sum(sxzs) as sxzs,
+        sum(shfwsxzs) as shfwsxzs,
+        ifnull(sum(wsqlcsxs)*100/sum(sxzs),0) as wsqlcbll,
+        sum(swblzs) as swblzs,
+        ifnull(sum(swblzs)*100/sum(bjzs),0) as swbll,
+        sum(bjzs) as bjzs,
+        ifnull(sum(wsqlcbjzs)*100/sum(bjzs),0) as wsbjl,
+        sum(wsqlcbjzs) as wsqlcbjzs,
+        sum(shfwswblzs) as shfwswblzs,
+        sum(shfwbjzs) as shfwbjzs,
+        sum(pdcs) as pdcs,
+        sum(pdcs0) as pdcs0,
+        ifnull(sum(pdcs0)*100/sum(pdcs),0) as zb0,
+        sum(pdcs1) as pdcs1,
+        ifnull(sum(pdcs1)*100/sum(pdcs),0) as zb1,
+        sum(pdcs2) as pdcs2,
+        ifnull(sum(pdcs2)*100/sum(pdcs),0) as zb2,
+        sum(pdcs3) as pdcs3,
+        ifnull(sum(pdcs3)*100/sum(pdcs),0) as zb3
+        <![CDATA[
+        FROM T_TJ_SLYS where stype='city' AND sname<>'总计'
+        ]]>
+        <if test="cparams!=null">
+            and name in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+</mapper>

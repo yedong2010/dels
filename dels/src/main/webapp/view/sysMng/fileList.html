@@ -1,0 +1,120 @@
+<script type="text/javascript">
+    FileAPI = {
+        debug: true,
+        forceLoad: true,
+        html5: false,
+        wrapInsideDiv: true,
+        jsPath: '<%=path%>/assets/js/FileAPI.min.js'
+        };
+</script>
+<section class="content-header">
+    <div class="btn-group">
+        <button ng-if="ifAdmin" class="btn btn-default" aria-hidden="true" data-toggle="modal" data-target="#uploadFileModal">文档上传</button>
+        <button ng-if="ifAdmin" class="btn btn-default" ng-click="fileTypeEdit()">文档类型管理</button>
+    </div>
+    <ol class="breadcrumb">
+        <li><a><i class="fa fa-dashboard"></i>系统管理</a></li>
+        <li class="active">文档规范</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <form class="form-inline" role="form">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" placeholder="输入查询内容" ng-model="fileName">
+                        </div>
+                    </div>
+                </form>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th >序号</th>
+                        <th datatype="rol_name" style="cursor:pointer">文件名</th>
+                        <th datatype="file_type" style="cursor:pointer">文档类型</th>
+                        <th datatype="uname" style="cursor:pointer">上传用户</th>
+                        <th datatype="create_time" style="cursor:pointer">上传时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-if="vm.items == null">
+                        <td colspan="6">
+                            <div class="text-center">
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr ng-if="vm.items != null && vm.items.length == 0">
+                        <td colspan="6">暂无数据</td>
+                    </tr>
+                    <tr ng-if="vm.items != null && vm.items.length != 0" ng-repeat="item in vm.items|orderBy:col:desc|filter:fileName|paging:vm.page.index:vm.page.size ">
+                        <td>{{item.index}}</td>
+                        <td>{{item.file_name}}</td>
+                        <td>
+                            <input type="hidden" name="file_type_id" value="{{item.file_type_id}}" />
+                            {{item.file_type}}
+                        </td>
+                        <td>{{item.uname}}</td>
+                        <td>{{item.create_time}}</td>
+                        <td>
+                            <i class="btn fa fa-download" style="color: #333;" ng-click="downloadFile(item.id)" title="下载文档"></i>
+                            <i data-toggle="tooltip" data-placement="top" title="删除"><i ng-if="ifAdmin" class="btn fa fa-trash" aria-hidden="true" data-toggle="modal" data-target="#delFileModal" ng-click="showDeleteFileModel(item.id,item.file_name)"></i></i>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal fade" id="delFileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <form role="form">
+                                <nobr><label class="control-label">确定删除文件<span id="delFile" style="color: blue">{{delFileName}}</span>？</label></nobr>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                            </button>
+                            <button type="button" class="btn btn-primary" ng-click="delFileFun()">
+                                确定
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="uploadFileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <form  name="form" id="upload-file" enctype="multipart/form-data" method="post">
+                                <input type="hidden" name="typeId" value="{{selectedFileType}}" />
+                                <input type="file" class="btn btn-default" ngf-select ng-model="file" name="file" id="exampleInputFile">
+                                <br>
+                                <select class="form-control" ng-model="selectedFileType">
+                                    <option  value="" >-&#45;&#45;上传文件类型-&#45;&#45;</option>
+                                    <option ng-repeat="x in typeList" value="{{x.id}}">{{x.file_type}}</option>
+                                </select>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" ng-click="closeUpFileModal()">关闭</button>
+                                    <button type="button" class="btn btn-primary" ng-click="submit2()">提交</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+            </div>
+        </div>
+<div class="col-md-2">
+<select ng-model="vm.page.size" class="form-control" title="每页条目数"
+        ng-options="pageSize for pageSize in [5, 10, 20, 50]"></select>
+</div>
+<div class="col-md-10">
+<uib-pagination total-items="vm.items|filter:fileName|size" ng-model="vm.page.index" max-size="5" items-per-page="vm.page.size" class="pagination-sm pull-right" boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></uib-pagination>
+<span class="list-nav-num pull-right form-group">共有{{vm.items|filter:fileName|size}}条，每页显示：{{vm.page.size}}条</span>
+</div>
+</div>
+    </div>
+</section>

@@ -1,0 +1,92 @@
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li ng-click="addPlanBack()" style="cursor: pointer"><a><i class="fa fa-dashboard"></i>方案管理</a></li>
+        <li class="active">方案新增</li>
+    </ol>
+    <div class="btn-group">
+        <div style="cursor:pointer;display: none" class="btn btn-default" addQuaRate>新增合格率</div>
+    </div>
+</section>
+<section class="content">
+    <form class="form-horizontal" name="addPlan" role="form" style="position: relative;top: 20px;width: 800px;left: 10px;" id="allRates">
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">方案名</label>
+            <span style="color:red">*</span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control" ng-exists="addPlanName" name="addPlanName" id="name" ng-model="planName" ng-maxlength="20" required>
+                <p ng-show="addPlan.addPlanName.$error.exists && addPlan.addPlanName.$dirty" class="help-block" style="color: red">方案名已存在.</p>
+                <p ng-show="addPlan.addPlanName.$error.maxlength && addPlan.addPlanName.$dirty" style="color:red" class="help-block">方案名最大长度为20字符</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">网上全流程办理率</label>
+            <span>%<span style="color:red">*</span></span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control rates" datatype="wsqlcbll" name="wsqlcbll" CName="网上全流程办理率" ng-model="addPlanAllPro" ng-pattern="/^([0-9]\d?|100)$/" required>
+                <p ng-show="addPlan.wsqlcbll.$error.pattern && addPlan.wsqlcbll.$dirty" style="color:red" class="help-block">只允许输入数字0-100</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">上网办理率</label>
+            <span>%<span style="color:red">*</span></span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control rates" datatype="swbll" name="swbll" CName="上网办理率" ng-model="addPlanAccept" ng-pattern="/^([0-9]\d?|100)$/" required>
+                <p ng-show="addPlan.swbll.$error.pattern && addPlan.swbll.$dirty" style="color:red" class="help-block">只允许输入数字0-100</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">网上办结率</label>
+            <span>%<span style="color:red">*</span></span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control rates" datatype="wsbjl" name="wsbjl" CName="网上办结率" ng-model="addPlanComplete" ng-pattern="/^([0-9]\d?|100)$/" required>
+                <p ng-show="addPlan.wsbjl.$error.pattern && addPlan.wsbjl.$dirty" style="color:red" class="help-block">只允许输入数字0-100</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">0次比率</label>
+            <span>%<span style="color:red">*</span></span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control rates" datatype="zb0" name="zb0" CName="0次比率" ng-model="addPlanZero" ng-pattern="/^([0-9]\d?|100)$/" required>
+                <p ng-show="addPlan.zb0.$error.pattern && addPlan.zb0.$dirty" style="color:red" class="help-block">只允许输入数字0-100</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">1次比率</label>
+            <span>%<span style="color:red">*</span></span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control rates" datatype="zb1" name="zb1" CName="1次比率" ng-model="addPlanOne" ng-pattern="/^([0-9]\d?|100)$/" required>
+                <p ng-show="addPlan.zb1.$error.pattern && addPlan.zb1.$dirty" style="color:red" class="help-block">只允许输入数字0-100</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">2次比率</label>
+            <span>%<span style="color:red">*</span></span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control rates" datatype="zb2" name="zb2" CName="2次比率" ng-model="addPlanTwo"ng-pattern="/^([0-9]\d?|100)$/" required>
+                <p ng-show="addPlan.zb2.$error.pattern && addPlan.zb2.$dirty" style="color:red" class="help-block">只允许输入数字0-100</p>
+            </div>
+        </div>
+        <div class="form-group" id="overTwoRate">
+            <label class="col-sm-2 col-md-offset-2 control-label">超过2次比率</label>
+            <span>%<span style="color:red">*</span></span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control rates" datatype="zb3" name="zb3" CName="超过2次比率" ng-model="addPlanAboveTwo" ng-pattern="/^([0-9]\d?|100)$/" required>
+                <p ng-show="addPlan.zb3.$error.pattern && addPlan.zb3.$dirty" style="color:red" class="help-block">只允许输入数字0-100</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <textarea id="planDesc" name="planDesc" ng-maxlength="100" class="form-control" rows="3" placeholder="描述" style="width: 68%;left: 22%;position: relative;" ng-model="addPlanDesc" ></textarea>
+            <p ng-show="addPlan.planDesc.$error.maxlength && addPlan.planDesc.$dirty" style="left: 22%;position: relative;color:red" class="help-block">描述的最大长度为100字符串</p>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-6 col-sm-1">
+                <button type="button" class="btn btn-default" ng-click="addPlanSub()" ng-disabled="addPlan.$invalid">增加</button>
+            </div>
+            <div class="col-sm-offset-1 col-sm-1">
+                <button type="button" class="btn btn-default" ng-click="addPlanBack()">取消</button>
+            </div>
+        </div>
+    </form>
+</section>

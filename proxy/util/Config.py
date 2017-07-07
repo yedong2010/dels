@@ -8,8 +8,8 @@ class Config():
     DB_HOST = "localhost"
     DB_PORT = 3306
     DB_DBNAME = "dels"
-    DB_USER = "dels"
-    DB_PASSWORD = "delspassw0rd"
+    DB_USER = "root"
+    DB_PASSWORD = "passwd"
 
 
     # 数据库连接编码

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dels.dao.monitor.AnalysisMapper">
+    <!-- 获取数据分析——业务办理时长分析列表 -->
+    <select id="szanalysistime" resultType="java.util.HashMap">
+        SELECT
+            a.sxbm,
+            a.sxmc,
+            a.sxlxmc,
+            a.nf,
+            a.c,
+            a.av,
+            a.promised_period
+        FROM
+            tercel.t_fx_sj a
+        WHERE
+            a.nf=#{choseYear}
+            order by a.c desc limit 100
+    </select>
+
+    <!-- 获取数据分析——业务审批环节分析列表 -->
+    <select id="szanalysisflow" resultType="java.util.HashMap">
+        SELECT
+            sxbm,
+            sxmc,
+            ywlx,
+            ywl,
+            sp,
+            liwai
+        FROM
+            (SELECT
+                sxbm,
+                    max(sxmc) sxmc,
+                    MAX(ywlx) AS ywlx,
+                    MAX(ywl) ywl,
+                    AVG(sb) + AVG(sl) + AVG(spcl) + AVG(bj) + AVG(bzgz) + AVG(bzsl) + AVG(tbcxsq) + AVG(tbcxjg) AS avg,
+                    AVG(spcl) as sp,
+                    AVG(bzgz) + AVG(bzsl) + AVG(tbcxsq) + AVG(tbcxjg) AS liwai
+            FROM
+                tercel.t_fx_hj
+                where nf = #{choseYear} and ywlx='行政审批'
+            GROUP BY sxbm
+            ORDER BY avg) a
+        ORDER BY ywl DESC limit 100
+    </select>
+
+    <!-- 获取数据分析——全流程事项分析列表 -->
+    <select id="szanalysisprocess" resultType="java.util.HashMap">
+        select a.ZZJGMC as zzjgmc,a.c as xzspsxs,ifnull(b.c,0)  as sjqlcsxs,ifnull(c.c,0) as sbqlcsxs,
+        ifnull(d.c,0)  as wywqlcsxs from (
+        select zzjgmc,count(sxbm) c from TERCEL.t_fx_qlc where nf=#{choseYear}
+        group by zzjgmc)a
+        left join
+        (
+        select zzjgmc,count(sxbm) c from TERCEL.t_fx_qlc where sjqlcsxs=1 and  nf=#{choseYear}
+        group by zzjgmc) b
+        on a.zzjgmc=b.zzjgmc
+        left join
+        (select zzjgmc,count(sxbm) c from TERCEL.t_fx_qlc where sbwsbssd =3 and  nf=#{choseYear}
+        group by zzjgmc) c
+        on a.zzjgmc=c.zzjgmc
+        left join
+        (select zzjgmc,count(sxbm) c from TERCEL.t_fx_qlc where wywqlcsxs =1 and  nf=#{choseYear}
+        group by zzjgmc) d
+        on a.zzjgmc=d.zzjgmc
+        left join
+        dim_province_order t2
+        on t2.name = a.zzjgmc
+        order by t2.order
+    </select>
+
+    <!-- 获取数据分析——投诉举报分析列表 -->
+    <select id="szanalysisreport" resultType="java.util.HashMap">
+        select zzjgmc,avg(TSJB) as tsjb,avg(myd) as myd,sum(ywl) as ywl,avg(ywblnl) as ywblnl,avg(rkcd) as rkcd
+        from t_fx_jt_bmnl
+        <![CDATA[
+        where tjsj >= #{startTime} and tjsj <= #{endTime}
+        ]]>
+        group by zzjgmc
+    </select>
+
+    <!-- 获取数据分析——业务能力分析列表 -->
+    <select id="szanalysisbusiness" resultType="java.util.HashMap">
+        select zzjgmc,sum(ywsl) as ywsl,sum(ywbj) as ywbj,round(avg(wywsx))as wywsx,avg(fwjcl) as fwjcl
+        from t_fx_jt_bmnl
+        <![CDATA[
+        where tjsj >= #{startTime} and tjsj <= #{endTime}
+        ]]>
+        group by zzjgmc
+    </select>
+
+    <!-- 获取数据分析——业务办理时长分析列表 -->
+    <select id="dsanalysisBusTime" resultType="java.util.HashMap">
+        select zzjgmc,sxbm,sxmc,sxlxmc,round(avg(sjblsc)) as sjblsc,round(avg(qjblsc)) as qjblsc,round(avg(jdblsc)) as jdblsc,
+        round(avg(pjsc))as pjsc,max(zcsc) as zcsc,min(zdsc) as zdsc
+        from t_fx_jt_blsc
+        <![CDATA[
+        where tjsj >= #{startTime} and tjsj <= #{endTime}
+        ]]>
+        group by zzjgmc,sxbm,sxmc,sxlxmc
+    </select>
+
+    <select id="bmbrkcdForRestful" resultType="java.util.Map">
+        select
+            b.zzjgmc, tsjb, myd, ywl, rkcd, tjsj
+        from t_fx_jt_bmnl a
+        left join dim_department b on a.zzjgmc=b.zzjgjc
+        where b.zzjgdm = #{zzjgdm}
+            and tjsj &gt;= #{startTime} and tjsj &lt;= #{endTime}
+        order by tjsj asc
+    </select>
+
+
+</mapper>

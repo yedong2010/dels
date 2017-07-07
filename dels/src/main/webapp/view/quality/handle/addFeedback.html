@@ -1,0 +1,36 @@
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li style="cursor: pointer" ng-click="goFeedback()"><a><i class="fa fa-dashboard"></i>数据质量反馈</a></li>
+        <li class="active">增加反馈</li>
+    </ol>
+</section>
+
+<section class="content">
+    <form class="form-horizontal" name="addFeedback" role="form" style="position: relative;top: 80px;width: 800px;left: 10px;" id="allRates">
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">反馈名称</label>
+            <span style="color:red">*</span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control" name="addFeedBackName" id="name" ng-model="feedbackName" ng-maxlength="50" required>
+                <p ng-show="addFeedback.addFeedBackName.$error.maxlength && addFeedback.addFeedBackName.$dirty" style="color:red" class="help-block">反馈名称最长为50字符</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">反馈内容</label>
+            <span style="color:red">*</span>
+            <div class="col-sm-7">
+                <textarea id="planDesc" class="form-control" rows="6" placeholder="描述" name="feedbackDes" ng-model="feedbackDes" ng-maxlength="500" required></textarea>
+                <p ng-show="addFeedback.feedbackDes.$error.maxlength && addFeedback.feedbackDes.$dirty" style="color:red" class="help-block">反馈名称最长为500字符</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-6 col-sm-1">
+                <button class="btn btn-default" ng-click="addFeedbackSub()" ng-disabled="addFeedback.$invalid">增加</button>
+            </div>
+            <div class="col-sm-offset-1 col-sm-1">
+                <button type="button" class="btn btn-default" ng-click="addFeedbackBack()">取消</button>
+            </div>
+        </div>
+    </form>
+</section>

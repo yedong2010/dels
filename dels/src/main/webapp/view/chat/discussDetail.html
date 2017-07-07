@@ -1,0 +1,37 @@
+<section class="content-header">
+    <h3>主题： {{item.theme}}
+        <small class="green-block"><i class="fa fa-commenting-o"></i></small>
+    </h3>
+    <ol class="breadcrumb">
+        <li ng-click="goParent()"><a href=""><i class="fa fa-dashboard"></i>主题列表</a></li>
+        <li class="active">精华帖</li>
+    </ol>
+</section>
+<section class="content">
+    <form role="form">
+        <div class="discuss-content form-group">
+            <div ta-bind="text" ng-model="item.content" ta-readonly='disabled'></div>
+        </div>
+        <hr>
+        <div class="discuss-speak form-group">
+            <div class="discuss-title">发表帖子</div>
+            <textarea class="form-control" rows="5" maxlength="100" placeholder="{{'#'+item.theme+'#,限制字数100以内'}}"
+                      ng-model="speak" ng-change="tolCount();">
+            </textarea>
+            <p>还可输入{{count}}字</p>
+            <button class="btn btn-default pull-right" ng-click="addReply()">回复</button>
+        </div>
+        <div class="discuss-reply form-group">
+            <div class="discuss-title">回复帖</div>
+            <div ng-repeat="r in item.replys">
+                <div style="margin-bottom: 10px;">
+                    <span class="reply-num yellow-block">{{$index+1}}楼</span>&nbsp;&nbsp;&nbsp;
+                    {{r.content}}
+                </div>
+                <div class="pull-right p_tail">
+                    来自 {{r.uname}} | {{r.ctime|date:'yyyy-MM-dd hh:mm'}}
+                </div>
+            </div>
+        </div>
+    </form>
+</section>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/context    
+    http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/mvc    
+    http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 自动扫描bean -->
+    <context:component-scan base-package="com.h3c.bigdata.dms.controller">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+    <!--扫描切面类注解 l13595 2017/1/12 9:27-->
+    <context:component-scan base-package="com.h3c.bigdata.dms.security"></context:component-scan>
+    <!-- 让aspectJ的注解起作用  l13595 2017/1/12 9:27-->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+    <!-- 默认的注解映射的支持 -->
+    <mvc:annotation-driven />
+
+    <!-- 默认访问的登录首页 -->
+    <mvc:view-controller path="/" view-name="forward:/home" />
+
+    <!-- 对静态资源文件的访问 -->
+    <mvc:default-servlet-handler />
+
+    <mvc:resources mapping="/view/**" location="/view/" cache-period="31556928" />
+
+    <!-- 定义一个视图解析器，区分前缀和后缀 -->
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="suffix" value=".jsp" />
+        <property name="prefix" value="/jsp/" />
+        <!-- 防止乱码 -->
+        <property name="contentType" value="text/html;charset=UTF-8" />
+    </bean>
+
+    <!--配置MultipartResolver 用于文件上传-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8" />
+        <property name="uploadTempDir" value="fileupload/tmp" />
+    </bean>
+
+</beans>

@@ -1,0 +1,149 @@
+{
+  "indicators": {
+    "title": "数据指标统计",
+    "menu": [
+      {
+        "img": "fa-location-arrow",
+        "url": "indicators.index",
+        "name": "总体统计",
+        "type": "single"
+      },
+      {
+        "img": "fa-bar-chart",
+        "url": "indicators.threeRate",
+        "name": "三率一数统计",
+        "type": "single"
+      },
+      {
+        "img": "fa-align-left",
+        "url": "indicators.enterSituation",
+        "name": "事项进驻情况",
+        "type": "single"
+      },
+      {
+        "img": "fa-area-chart",
+        "url": "indicators.busProcess",
+        "name": "业务办理统计",
+        "type": "single"
+      },
+      {
+        "img": "fa-pie-chart",
+        "url": "indicators.noBusMatters",
+        "name": "无业务事项统计",
+        "type": "single"
+      }
+    ]
+  },
+  "quality": {
+    "title": "数据质量监测",
+    "menu": [
+      {
+        "img": "fa-location-arrow",
+        "url": "quality.main",
+        "name": "总体统计",
+        "type":"single"
+      },
+      {
+        "img": "fa-align-left",
+        "url": "quality.report",
+        "name": "数据质量统计",
+        "type": "single"
+      },
+      {
+        "img": "fa-bar-chart",
+        "url": "quality.business",
+        "name": "进驻事项数据版本",
+        "type":"single"
+      }
+    ]
+  },
+  "analysis": {
+    "title": "多维数据分析",
+    "menu": [
+      {
+        "img": "fa-location-arrow",
+        "url": "",
+        "name": "业务分析",
+        "type":"parent",
+        "child": [
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.trend",
+            "name": "业务趋势分析"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.handleAbilityTrend",
+            "name": "办理能力变化"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.uselessPossibility",
+            "name": "僵尸事项可能性"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.handleAbilityContrast",
+            "name": "部门综合能力对比"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.efficiency",
+            "name": "办事事项效率分析"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.cumulantsWarning",
+            "name": "业务积存量预警"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.timeConsume",
+            "name": "业务办理时长"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.acceptBusRanking",
+            "name": "业务受理量排名"
+          }
+        ]
+      },
+      {
+        "img": "fa-location-arrow",
+        "url": "",
+        "name": "行为分析",
+        "type":"parent",
+        "child": [
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.noAct",
+            "name": "不作为分析"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.loosely",
+            "name": "不严谨分析"
+          }
+        ]
+      },
+      {
+        "img": "fa-location-arrow",
+        "url": "",
+        "name": "决策分析",
+        "type":"parent",
+        "child": [
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.",
+            "name": "同比"
+          },
+          {
+            "img": "fa-smile-o",
+            "url": "analysis.sequential",
+            "name": "环比"
+          }
+        ]
+      }
+    ]
+  }
+}

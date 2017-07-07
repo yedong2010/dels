@@ -1,0 +1,38 @@
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li ng-click="editRoleBack()" style="cursor: pointer"><a><i class="fa fa-dashboard"></i>角色管理</a></li>
+        <li class="active">编辑角色</li>
+    </ol>
+</section>
+<section class="content">
+    <form class="form-horizontal" name="editRole" role="form" style="position: relative;top: 20px;">
+        <div class="form-group">
+            <label for="roleName" class="col-sm-1 col-md-offset-2 control-label">角色名称</label>
+            <div class="col-sm-7">
+                <input type="text" class="form-control" ng-exists="editRoleName" roleId="{{roleId}}" id="roleName" name="roleName" ng-maxlength="100" ng-model="roleName" required>
+                <p ng-show="editRole.roleName.$error.exists && editRole.roleName.$dirty" class="help-block" style="color: red">角色名已存在.</p>
+                <p ng-show="editRole.roleName.$error.maxlength && editRole.roleName.$dirty" style="color:red" class="help-block">角色名最大长度100字符</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-1 col-md-offset-2 control-label">角色权限</label>
+            <div class="panel panel-default" style="height:100%;overflow:auto;left: 1%;position:relative;width:56%;">
+                <!--<table border="1">
+                    <div class="panel-body">-->
+                        <!--<ul id="editRoleTree" class="ztree ng-scope" ui-view=""></ul>-->
+                        <ul id="editRoleTree" class="ztree"></ul>
+                    <!--</div>
+                </table>-->
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-5 col-sm-1">
+                <button type="submit" class="btn btn-default" ng-click="editRoleSub()" ng-disabled="editRole.$invalid">保存</button>
+            </div>
+            <div class="col-sm-offset-1 col-sm-1">
+                <button type="button" class="btn btn-default" ng-click="editRoleBack()">取消</button>
+            </div>
+        </div>
+    </form>
+</section>

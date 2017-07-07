@@ -1,0 +1,18 @@
+<div class="modal-header">
+    <h4>部门选择</h4>
+</div>
+<div class="modal-body">
+    <form class="form-inline" role="form">
+        <div class="checkbox" ng-repeat="item in items">
+            <label>
+                <input type="checkbox" ng-click="updateSelection(item)"> {{item.mc}}
+            </label>
+        </div>
+        <div ng-show="selection.length == 0" style="color:red">*必须选择至少一项</div>
+    </form>
+</div>
+<div class="modal-footer">
+    <!--<button class="btn btn-primary" ng-click="ok()">确认</button>-->
+    <button class="btn btn-primary" ng-click="ok()" ng-disabled="selection.length == 0">确认</button>
+    <button class="btn btn-warning" ng-click="cancel()">取消</button>
+</div>

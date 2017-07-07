@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dels.dao.monitor.QualityMapper">
+    <!-- 获取指定年份指定月份的全省的质量概况 -->
+    <select id="qszl" resultType="java.util.HashMap">
+        <![CDATA[
+        SELECT T1.S AS zq, T2.S AS cw, T3.S AS zs, IFNULL(T1.S*100/T3.S, 100.00) as zql
+        FROM 
+            (
+            SELECT SUM(JLZS) S 
+            FROM TERCEL.t_tj_zljc_hxtj
+            WHERE TJNF = #{year}
+            AND TJYF >= #{smonth}
+            AND TJYF <= #{emonth}
+            AND ERROR = 0
+            )AS T1,
+            (
+            SELECT SUM(JLZS) S
+            FROM TERCEL.t_tj_zljc_hxtj
+            WHERE TJNF = #{year}
+            AND TJYF >= #{smonth}
+            AND TJYF <= #{emonth}
+            AND ERROR > 0
+            )AS T2,
+            (
+            SELECT SUM(JLZS) S
+            FROM TERCEL.t_tj_zljc_hxtj
+            WHERE TJNF = #{year}  
+            AND TJYF >= #{smonth}
+            AND TJYF <= #{emonth}
+            )AS T3;
+            ]]>
+    </select>
+    <!-- 获取指定年份指定月份的省级的质量概况 -->
+    <select id="szzl" resultType="java.util.HashMap">
+        <![CDATA[
+            SELECT T1.S AS zq, T2.S AS cw, T3.S AS zs, IFNULL(T1.S*100/T3.S, 100.00) as zql
+            FROM 
+                (
+                SELECT SUM(JLZS) S 
+                FROM TERCEL.t_tj_zljc_hxtj
+                WHERE TJNF = #{year}
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth}
+                AND ERROR = 0
+                AND LEFT(BMMC, 3) = '广东省'
+                )AS T1,
+                (
+                SELECT SUM(JLZS) S
+                FROM TERCEL.t_tj_zljc_hxtj
+                WHERE TJNF = #{year}
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth}
+                AND ERROR > 0
+                AND LEFT(BMMC, 3) = '广东省'
+                )AS T2,
+                (
+                SELECT SUM(JLZS) S
+                FROM TERCEL.t_tj_zljc_hxtj
+                WHERE TJNF = #{year}  
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth} 
+                AND LEFT(BMMC, 3) = '广东省' 
+                )AS T3
+        ]]>
+    </select>
+    <!-- 获取指定年份指定月份的地市的质量概况 -->
+    <select id="dszl" resultType="java.util.HashMap">
+        SELECT T1.S AS zq, T2.S AS cw, T3.S AS zs, IFNULL(T1.S*100/T3.S, 100.00) as zql
+        FROM
+        (
+        SELECT SUM(JLZS) S
+        FROM TERCEL.t_tj_zljc_hxtj
+        WHERE TJNF = #{year}
+        <![CDATA[
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth}
+                AND ERROR = 0
+                AND LEFT(BMMC, 3) <> '广东省'
+            ]]>
+        <if test="cparams!=null">
+            and BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        )AS T1,
+        (
+        SELECT SUM(JLZS) S
+        FROM TERCEL.t_tj_zljc_hxtj
+        WHERE TJNF = #{year}
+        <![CDATA[
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth}
+                AND LEFT(BMMC, 3) <> '广东省'
+                AND ERROR > 0
+            ]]>
+        <if test="cparams!=null">
+            and BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        )AS T2,
+        (
+        SELECT SUM(JLZS) S
+        FROM TERCEL.t_tj_zljc_hxtj
+        WHERE TJNF = #{year}
+        <![CDATA[
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth} 
+                AND LEFT(BMMC, 3) <> '广东省' 
+            ]]>
+        <if test="cparams!=null">
+            and BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        )AS T3
+    </select>
+    <!-- 获取指定年份指定月份的全省的错误分类 -->
+    <select id="qscwfl" resultType="java.util.HashMap">
+         <![CDATA[
+            SELECT T2.error, T2.ERROR_NAME as name, SUM(T1.ZS) AS y
+            FROM
+                (
+                SELECT ERROR, SUM(JLZS) ZS
+                FROM TERCEL.t_tj_zljc_hxtj
+                WHERE TJNF = #{year}
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth}
+                AND ERROR > 0
+                GROUP BY ERROR
+                )T1 INNER JOIN
+                (
+                SELECT ERROR, ERROR_NAME
+                FROM TERCEL.t_dim_error
+                )T2 ON T1.ERROR&T2.ERROR = T2.ERROR
+            GROUP BY T2.error,T2.ERROR_NAME
+            order by T2.error
+        ]]>
+    </select>
+    <!-- 获取指定年份指定月份的省级的错误分类 -->
+    <select id="szcwfl" resultType="java.util.HashMap">
+        <![CDATA[
+            SELECT T2.error, T2.ERROR_NAME as name, SUM(T1.ZS) AS y 
+            FROM 
+                (
+                SELECT ERROR, SUM(JLZS) ZS 
+                FROM TERCEL.t_tj_zljc_hxtj
+                WHERE TJNF = #{year}
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth}
+                AND ERROR > 0
+                AND LEFT(BMMC, 3) = '广东省'
+                GROUP BY ERROR
+                )T1 INNER JOIN
+                (
+                SELECT ERROR, ERROR_NAME
+                FROM TERCEL.t_dim_error
+                )T2 ON T1.ERROR&T2.ERROR = T2.ERROR
+            GROUP BY T2.ERROR, T2.ERROR_NAME
+            order by T2.error
+        ]]>
+    </select>
+    <!-- 获取指定年份指定月份的地市的错误分类 -->
+    <select id="dscwfl" resultType="java.util.HashMap">
+        SELECT T2.error, T2.ERROR_NAME as name, SUM(T1.ZS) as y
+        FROM
+        (
+        SELECT ERROR, SUM(JLZS) ZS
+        FROM TERCEL.t_tj_zljc_hxtj
+        WHERE TJNF = #{year}
+        <![CDATA[
+                AND TJYF >= #{smonth}
+                AND TJYF <= #{emonth}
+                AND ERROR > 0
+                AND LEFT(BMMC, 3) <> '广东省'
+            ]]>
+        <if test="cparams!=null">
+            and BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY ERROR
+        )T1 INNER JOIN
+        (
+        SELECT ERROR, ERROR_NAME
+        FROM TERCEL.t_dim_error
+        )T2 ON <![CDATA[ T1.ERROR&T2.ERROR = T2.ERROR ]]>
+        GROUP BY T2.ERROR, T2.ERROR_NAME
+        ORDER BY T2.ERROR
+    </select>
+
+    <!-- 获取指定年份指定月份指定名称的地市或省级部门的错误分类 -->
+    <select id="cwflByName" resultType="java.util.HashMap">
+        <![CDATA[
+            SELECT T2.error,T2.ERROR_NAME as name, SUM(T1.ZS) AS zs FROM 
+            (
+            SELECT ERROR,SUM(JLZS) ZS FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} AND TJYF>=#{smonth} AND TJYF<=#{emonth}
+            AND ERROR >0 AND BMMC=#{name}
+            GROUP BY ERROR) T1
+            INNER JOIN
+            (SELECT ERROR,ERROR_NAME FROM TERCEL.T_DIM_ERROR) T2
+            ON T1.ERROR&T2.ERROR=T2.ERROR
+            GROUP BY T2.ERROR,T2.ERROR_NAME
+        ]]>
+    </select>
+
+    <!-- 获取指定年份指定月份指定名称的地市或省级部门的错误分类 申办环节 -->
+    <select id="cwtbByName" resultType="java.lang.String">
+        SELECT tname FROM TERCEL.t_tj_zljc_hxtj
+        <![CDATA[
+        WHERE BMMC=#{name} and tjnf=#{year} and tjyf >=#{smonth} and tjyf <= #{emonth} and error>0
+        ]]>
+        group by tname
+        order by tname
+    </select>
+
+    <!-- 获取指定年份指定月份指定名称的地市或省级部门的错误分类 申办环节 -->
+    <select id="cwfllbByTable" resultType="java.util.HashMap" statementType="STATEMENT">
+        SELECT sblsh,sxbm,error,'${hjName}' as hj FROM ${tableName}
+        <![CDATA[
+        WHERE D_BMMC='${name}'
+        and DATE_FORMAT(${timeName},'%Y-%m')>=concat(${year},'-',LPAD(${smonth},2,'0')) AND DATE_FORMAT(${timeName},'%Y-%m')<=concat(${year},'-',LPAD(${emonth},2,'0'))
+        AND ERROR>0
+
+        AND IFNULL(INCREMENTCOL,'2016-01-01')<=(SELECT MIN(SCSJ) FROM TERCEL.t_tj_zljc_hxtj)
+        limit 100000
+        ]]>
+    </select>
+
+    <!-- 获取省级数据记录正确质量报告 -->
+    <select id="szsjzl" resultType="java.util.HashMap">
+        SELECT A.BMMC as name, A.S AS zl, IFNULL(B.S,0) AS zq, IFNULL(C.S,0) AS cw,
+        IFNULL(B.S*100/A.S,100) AS zql FROM
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[ AND TJYF>=#{smonth} AND TJYF<=#{emonth} ]]>
+        AND LEFT(BMMC,3)='广东省'
+        GROUP BY BMMC) A LEFT JOIN
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[ AND TJYF>=#{smonth} AND TJYF<=#{emonth} ]]>
+        AND LEFT(BMMC,3)='广东省' AND ERROR=0
+        GROUP BY BMMC) B ON A.BMMC=B.BMMC LEFT JOIN
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[ AND TJYF>=#{smonth} AND TJYF<=#{emonth} ]]>
+        AND LEFT(BMMC,3)='广东省' AND ERROR>0
+        GROUP BY BMMC) C ON A.BMMC=C.BMMC
+        left join dim_province_order o on A.BMMC = o.name
+        <if test="cparams!=null">
+            where A.BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        order by o.order
+    </select>
+    
+        <!-- 获取各地市数据记录正确质量报告 -->
+    <select id="dssjzl" resultType="java.util.HashMap">
+        SELECT A.BMMC as name, A.S AS zl, IFNULL(B.S,0) AS zq, IFNULL(C.S,0) AS cw,
+        IFNULL(B.S*100/A.S,100) AS zql FROM
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} AND <![CDATA[ TJYF>=#{smonth} AND TJYF<=#{emonth} AND LEFT(BMMC,3)<>'广东省' AND BMMC<>'??????????' AND BMMC<>'无' AND BMMC<>'未填' ]]>
+        <if test="cparams!=null">
+            and BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY BMMC) A LEFT JOIN
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} AND <![CDATA[ TJYF>=#{smonth} AND TJYF<=#{emonth} AND LEFT(BMMC,3)<>'广东省' AND ERROR=0 AND BMMC<>'??????????' AND BMMC<>'无' AND BMMC<>'未填' ]]>
+        <if test="cparams!=null">
+            and BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY BMMC) B ON A.BMMC=B.BMMC LEFT JOIN
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} AND <![CDATA[ TJYF>=#{smonth} AND TJYF<=#{emonth} AND LEFT(BMMC,3)<>'广东省' AND ERROR>0 AND BMMC<>'??????????' AND BMMC<>'无' AND BMMC<>'未填' ]]>
+        <if test="cparams!=null">
+            and BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY BMMC) C ON A.BMMC=C.BMMC
+        left join dim_city_order o on A.BMMC = o.sname
+        order by o.seq
+    </select>
+    <!-- 获取省级数据记录正确质量报告总计 -->
+    <select id="szsjzlzj" resultType="java.util.HashMap">
+        SELECT
+        ifnull(sum(d.zl),0) as zl,ifnull(sum(d.zq),0) as zq,ifnull(sum(d.cw),0) as cw,ifnull(sum(d.zq)*100/sum(d.zl),100) as zql
+        FROM
+        (
+        SELECT A.BMMC as name, A.S AS zl, IFNULL(B.S,0) AS zq, IFNULL(C.S,0) AS cw,
+        IFNULL(B.S*100/A.S,100) AS zql FROM
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[ AND TJYF>=#{smonth} AND TJYF<=#{emonth} ]]>
+        AND LEFT(BMMC,3)='广东省'
+        GROUP BY BMMC) A LEFT JOIN
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[ AND TJYF>=#{smonth} AND TJYF<=#{emonth} ]]>
+        AND LEFT(BMMC,3)='广东省' AND ERROR=0
+        GROUP BY BMMC) B ON A.BMMC=B.BMMC LEFT JOIN
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[ AND TJYF>=#{smonth} AND TJYF<=#{emonth} ]]>
+        AND LEFT(BMMC,3)='广东省' AND ERROR>0
+        GROUP BY BMMC) C ON A.BMMC=C.BMMC
+        <if test="cparams!=null">
+            where A.BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        ) as d
+    </select>
+
+    <!-- 获取区域地市数据记录正确质量报告总计 -->
+    <select id="dssjzlzj" resultType="java.util.HashMap">
+        SELECT
+        ifnull(sum(d.zl),0) as zl,ifnull(sum(d.zq),0) as zq,ifnull(sum(d.cw),0) as cw,ifnull(sum(d.zq)*100/sum(d.zl),100) as zql
+        FROM
+        (
+        SELECT A.BMMC as name, A.S AS zl, IFNULL(B.S,0) AS zq, IFNULL(C.S,0) AS cw,
+        IFNULL(B.S*100/A.S,100) AS zql FROM
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[AND TJYF>=#{smonth} AND TJYF<=#{emonth}
+            AND LEFT(BMMC,3)<>'广东省' AND BMMC<>'??????????' AND BMMC<>'无' AND BMMC<>'未填' ]]>
+        <if test="cparams!=null">
+            and BMMC in
+            <foreach collection="cparams" item="item" index="index"
+                     open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY BMMC) A LEFT JOIN
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[AND TJYF>=#{smonth} AND TJYF<=#{emonth}
+            AND LEFT(BMMC,3)<>'广东省' AND ERROR=0 AND BMMC<>'??????????' AND BMMC<>'无' AND BMMC<>'未填' ]]>
+        GROUP BY BMMC) B ON A.BMMC=B.BMMC LEFT JOIN
+        (
+        SELECT BMMC,SUM(JLZS) S FROM TERCEL.t_tj_zljc_hxtj WHERE TJNF=#{year} <![CDATA[AND TJYF>=#{smonth} AND TJYF<=#{emonth}
+            AND LEFT(BMMC,3)<>'广东省' AND ERROR>0 AND BMMC<>'??????????' AND BMMC<>'无' AND BMMC<>'未填' ]]>
+        GROUP BY BMMC) C ON A.BMMC=C.BMMC
+        ) as d
+    </select>
+
+    <!-- 获取指定日期的全省进驻事项数 -->
+    <select id="qsjzsxs" resultType="java.util.HashMap">
+        SELECT
+        (SELECT COUNT(1) FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED') sxzs,
+        (SELECT COUNT(1) FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND SXLXMC='行政审批') xzsp,
+        COUNT(1) shfw FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND SXLXMC='公共服务'
+    </select>
+
+    <!-- 获取指定版本1日期和版本2日期的全省进驻事项数差异列表 -->
+    <select id="qsjzsxsdb" resultType="java.util.HashMap">
+        SELECT S.sxbm,S.sxmc,S.sbwsbssd,S.pdcs,S.sxlxmc,S.fwsxzt,S.xzqhdm,A.xzqhqc,
+        S.ssbmzzjgdm zzjgdm,D.zzjgmc,D.zzjgjc,S.version FROM SXWD_HISTORY S
+        LEFT JOIN DIM_DEPARTMENT D ON S.SSBMZZJGDM=D.ZZJGDM
+        LEFT JOIN t_dim_areadivide A ON S.XZQHDM=A.XZQHDM
+        WHERE VERSION IN (#{startTime},#{endTime}) AND FWSXZT='PUBLISHED'
+        AND SXBM NOT IN
+        (
+        SELECT SXBM FROM SXWD_HISTORY WHERE VERSION=#{startTime} AND FWSXZT='PUBLISHED'
+        INTERSECT
+        SELECT SXBM FROM SXWD_HISTORY WHERE VERSION=#{endTime} AND FWSXZT='PUBLISHED'
+        )
+    </select>
+
+    <!-- 获取指定日期的省级进驻事项数 -->
+    <select id="szjzsxs" resultType="java.util.HashMap">
+        SELECT
+        (SELECT COUNT(1) FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND XZQHDM='440000') sxzs,
+        (SELECT COUNT(1) FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND SXLXMC='行政审批' AND XZQHDM='440000') xzsp,
+         COUNT(1) shfw FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND SXLXMC='公共服务'  AND XZQHDM='440000'
+    </select>
+
+    <!-- 获取指定版本1日期和版本2日期的省级进驻事项数差异列表 -->
+    <select id="szjzsxsdb" resultType="java.util.HashMap">
+        SELECT S.sxbm,S.sxmc,S.sbwsbssd,S.pdcs,S.sxlxmc,S.fwsxzt,S.xzqhdm,A.xzqhqc,
+        S.ssbmzzjgdm zzjgdm,D.zzjgmc,D.zzjgjc,S.version FROM SXWD_HISTORY S
+        LEFT JOIN DIM_DEPARTMENT D ON S.SSBMZZJGDM=D.ZZJGDM
+        LEFT JOIN t_dim_areadivide A ON S.XZQHDM=A.XZQHDM
+        WHERE VERSION IN (#{startTime},#{endTime}) AND FWSXZT='PUBLISHED' AND S.XZQHDM='440000'
+        AND SXBM NOT IN
+        (
+        SELECT SXBM FROM SXWD_HISTORY WHERE VERSION=#{startTime} AND FWSXZT='PUBLISHED' AND XZQHDM='440000'
+        INTERSECT
+        SELECT SXBM FROM SXWD_HISTORY WHERE VERSION=#{endTime} AND FWSXZT='PUBLISHED' AND XZQHDM='440000'
+        )
+    </select>
+
+    <!-- 获取指定日期的地市进驻事项数 -->
+    <select id="dsjzsxs" resultType="java.util.HashMap">
+        SELECT
+        (SELECT COUNT(1) FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED'
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide WHERE QYJBDM=3)) sxzs,
+        (SELECT COUNT(1) FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND SXLXMC='行政审批'
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide WHERE QYJBDM=3)) xzsp,
+         COUNT(1) shfw FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND SXLXMC='公共服务'
+         AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide WHERE QYJBDM=3)
+    </select>
+
+    <!-- 获取指定版本1日期和版本2日期的地市进驻事项数差异列表 -->
+    <select id="dsjzsxsdb" resultType="java.util.HashMap">
+        SELECT S.sxbm,S.sxmc,S.sbwsbssd,S.pdcs,S.sxlxmc,S.fwsxzt,S.xzqhdm,A.xzqhqc,
+        S.ssbmzzjgdm zzjgdm,D.zzjgmc,D.zzjgjc,S.version FROM SXWD_HISTORY S
+        LEFT JOIN DIM_DEPARTMENT D ON S.SSBMZZJGDM=D.ZZJGDM
+        LEFT JOIN t_dim_areadivide A ON S.XZQHDM=A.XZQHDM
+        WHERE VERSION IN (#{startTime},#{endTime}) AND FWSXZT='PUBLISHED'
+        AND S.XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide WHERE QYJBDM=3)
+        AND SXBM NOT IN
+        (
+        SELECT SXBM FROM SXWD_HISTORY WHERE VERSION=#{startTime} AND FWSXZT='PUBLISHED'
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide WHERE QYJBDM=3)
+        INTERSECT
+        SELECT SXBM FROM SXWD_HISTORY WHERE VERSION=#{endTime} AND FWSXZT='PUBLISHED'
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide WHERE QYJBDM=3)
+        )
+        ORDER BY S.XZQHDM
+    </select>
+
+    <!-- 获取指定日期的区县进驻事项数 -->
+    <select id="qxjzsxs" resultType="java.util.HashMap">
+        SELECT
+        (SELECT COUNT(1) FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED'
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide where QYJBDM = 4)) sxzs,
+        (SELECT COUNT(1) FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND SXLXMC='行政审批'
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide where QYJBDM = 4)) xzsp,
+         COUNT(1) shfw FROM SXWD_HISTORY WHERE VERSION=#{choseDate} AND FWSXZT='PUBLISHED' AND SXLXMC='公共服务'
+         AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide where QYJBDM = 4)
+    </select>
+
+    <!-- 获取指定版本1日期和版本2日期的区县进驻事项数差异列表 -->
+    <select id="qxjzsxsdb" resultType="java.util.HashMap">
+        SELECT S.sxbm,S.sxmc,S.sbwsbssd,S.pdcs,S.sxlxmc,S.fwsxzt,S.xzqhdm,A.xzqhqc,
+        S.ssbmzzjgdm zzjgdm,D.zzjgmc,D.zzjgjc,S.version FROM SXWD_HISTORY S
+        LEFT JOIN DIM_DEPARTMENT D ON S.SSBMZZJGDM=D.ZZJGDM
+        LEFT JOIN t_dim_areadivide A ON S.XZQHDM=A.XZQHDM
+        WHERE VERSION IN (#{startTime},#{endTime}) AND FWSXZT='PUBLISHED'
+        AND S.XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide where QYJBDM = 4)
+        AND SXBM NOT IN
+        (
+        SELECT SXBM FROM SXWD_HISTORY WHERE VERSION=#{startTime} AND FWSXZT='PUBLISHED'
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide where QYJBDM = 4)
+        INTERSECT
+        SELECT SXBM FROM SXWD_HISTORY WHERE VERSION=#{endTime} AND FWSXZT='PUBLISHED'
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide where QYJBDM = 4)
+        )
+        ORDER BY S.XZQHDM
+    </select>
+
+    <!-- 获取指定日期的全省进驻部门数 -->
+    <select id="qsjzbms" resultType="java.util.HashMap">
+        SELECT COUNT(1) bmzs FROM DIM_DEPARTMENT_HISTORY
+         WHERE VERSION=#{choseDate}
+    </select>
+
+    <!-- 获取指定版本1日期和版本2日期的全省进驻部门数差异列表 -->
+    <select id="qsjzbmsdb" resultType="java.util.HashMap">
+        SELECT zzjgdm,zzjgmc,zzjgjc,xzqhdm,xzqhqc,sjmc,qymc,version FROM DIM_DEPARTMENT_HISTORY D
+        WHERE D.VERSION IN (#{startTime},#{endTime})
+        AND ZZJGDM NOT IN
+        (
+        SELECT ZZJGDM FROM DIM_DEPARTMENT_HISTORY WHERE VERSION=#{startTime}
+        INTERSECT
+        SELECT ZZJGDM FROM DIM_DEPARTMENT_HISTORY WHERE VERSION=#{endTime}
+        )
+    </select>
+
+    <!-- 获取指定日期的地市进驻部门数 -->
+    <select id="dsjzbms" resultType="java.util.HashMap">
+        SELECT COUNT(1) bmzs FROM DIM_DEPARTMENT_HISTORY
+        WHERE VERSION=#{choseDate}
+        AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide WHERE QYJBDM=3)
+    </select>
+
+    <!-- 获取指定版本1日期和版本2日期的地市进驻部门数差异列表 -->
+    <select id="dsjzbmsdb" resultType="java.util.HashMap">
+        SELECT zzjgdm,zzjgmc,zzjgjc,xzqhdm,xzqhqc,sjmc,qymc,qyjbdm,version FROM DIM_DEPARTMENT_HISTORY D
+        WHERE D.VERSION IN (#{startTime},#{endTime}) AND D.QYJBDM = 3
+        AND ZZJGDM NOT IN
+        (
+        SELECT ZZJGDM FROM DIM_DEPARTMENT_HISTORY WHERE VERSION=#{startTime} AND QYJBDM = 3
+        INTERSECT
+        SELECT ZZJGDM FROM DIM_DEPARTMENT_HISTORY WHERE VERSION=#{endTime} AND QYJBDM = 3
+        )
+    </select>
+
+    <!-- 获取指定日期的区县进驻部门数 -->
+    <select id="qxjzbms" resultType="java.util.HashMap">
+        SELECT COUNT(1) bmzs FROM DIM_DEPARTMENT_HISTORY
+         WHERE VERSION=#{choseDate}
+         AND XZQHDM IN (SELECT XZQHDM FROM t_dim_areadivide WHERE QYJBDM=4)
+    </select>
+
+    <!-- 获取指定版本1日期和版本2日期的区县进驻部门数差异列表 -->
+    <select id="qxjzbmsdb" resultType="java.util.HashMap">
+        SELECT zzjgdm,zzjgmc,zzjgjc,xzqhdm,xzqhqc,sjmc,qymc,qyjbdm,version FROM DIM_DEPARTMENT_HISTORY D
+        WHERE D.VERSION IN (#{startTime},#{endTime}) AND D.QYJBDM = 4
+        AND ZZJGDM NOT IN
+        (
+        SELECT ZZJGDM FROM DIM_DEPARTMENT_HISTORY WHERE VERSION=#{startTime} AND QYJBDM = 4
+        INTERSECT
+        SELECT ZZJGDM FROM DIM_DEPARTMENT_HISTORY WHERE VERSION=#{endTime} AND QYJBDM = 4
+        )
+    </select>
+
+    <!--数据过程完整性-->
+    <select id="szdataProcess" parameterType="String" resultType="java.util.Map">
+        select zzjgmc,sblsh,sxbm,sxmc,qshj,bjsj
+        from t_zl_jt_sjgcwz
+        <![CDATA[
+        where bjsj >= #{startTime} and bjsj <= str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+        ]]>
+    </select>
+
+    <!--业务逻辑异常列表-->
+    <select id="szbuslogic" parameterType="String" resultType="java.util.Map">
+        select zzjgmc,sblsh,sxbm,sxmc,sbsj,slsj,bjsj
+        from t_zl_jt_ywljhl
+        <![CDATA[
+        where bjsj >= #{startTime} and bjsj <= str_to_date( #{endTime} ||' 23:59:59','%Y-%m-%d %T')
+        ]]>
+    </select>
+
+    <!--业务总量对账-->
+    <select id="ywlaccount" parameterType="String" resultType="java.util.Map">
+        <![CDATA[
+        select sum(bjzs) as value from core_count_hxtj
+        where tjrq >= #{startTime} and tjrq <= #{dateTime}
+        ]]>
+    </select>
+</mapper>

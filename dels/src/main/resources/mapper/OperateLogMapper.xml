@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dels.dao.OperateLogMapper">
+
+    <resultMap id="rOpLog" type="com.dels.model.sys.OperateLog">
+        <result column="class_name" property="className" ></result>
+        <result column="method_name" property="methodName" ></result>
+        <result column="ip_address" property="ipAdress" ></result>
+    </resultMap>
+    <parameterMap id="pOpLog" type="com.dels.model.sys.OperateLog">
+        <parameter property="className" resultMap="rOpLog" jdbcType="VARCHAR"></parameter>
+        <parameter property="methodName" resultMap="rOpLog" jdbcType="VARCHAR"></parameter>
+        <parameter property="ipAdress" resultMap="rOpLog" jdbcType="VARCHAR"></parameter>
+    </parameterMap>
+
+    <insert id="insertLog" parameterMap="pOpLog">
+        INSERT INTO dms_opera_log (id, operation, user_name,method_name,class_name,ip_address)
+        VALUES(#{id},#{operation},#{user_name},#{methodName},#{className},#{ipAdress})
+    </insert>
+
+    <select id="getLogList" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT
+            id,operation,to_char(time, 'YYYY-MM-DD HH24:MI:SS') as time,ip_address, user_name
+        FROM dms_opera_log
+        where 1=1
+        <if test="operaLog.startTime!=null and operaLog.startTime!=''">
+            and time &gt;= to_timestamp(#{operaLog.startTime},'yyyy-mm-dd')
+        </if>
+        <if test="operaLog.endTime!=null and operaLog.endTime!=''">
+            and time &lt;= to_timestamp(#{operaLog.endTime}, 'yyyy-mm-dd')
+        </if>
+        <if test="operaLog.param!=null and operaLog.param!=''">
+            and operation like '%'||#{operaLog.param}||'%'
+            or user_name like '%'||#{operaLog.param}||'%'
+        </if>
+        order by time desc
+    </select>
+
+    <select id="countLogList" parameterType="java.util.Map" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM dms_opera_log
+    </select>
+
+    <select id="countSum" resultType="java.lang.Integer">
+        select count(1) as sum_num from dms_opera_log
+        where time &gt; to_timestamp(#{startTime}, 'yyyy-mm-dd')
+            and time &lt; to_timestamp(#{endTime}, 'yyyy-mm-dd')
+    </select>
+
+    <select id="countLogin" resultType="java.lang.Integer">
+        select count(1) as log_num  from dms_opera_log
+        where time &gt; to_timestamp(#{startTime}, 'yyyy-mm-dd')
+            and time &lt; to_timestamp(#{endTime}, 'yyyy-mm-dd')
+            and operation='登录'
+    </select>
+
+    <select id="countUser" resultType="java.lang.Integer">
+        select count(1) as user_num from (
+            select user_name from dms_opera_log
+            where time &gt; to_timestamp(#{startTime}, 'yyyy-mm-dd')
+            and time &lt; to_timestamp(#{endTime}, 'yyyy-mm-dd')
+            GROUP BY user_name
+        ) as a
+    </select>
+
+    <select id="countPerUser" resultType="Map">
+        select user_name, count(OPERATION) as use_num from dms_opera_log
+        where time &gt; to_timestamp(#{startTime}, 'yyyy-mm-dd')
+            and time &lt; to_timestamp(#{endTime}, 'yyyy-mm-dd')
+        GROUP BY user_name
+        ORDER BY user_name
+    </select>
+
+    <select id="countRole" resultType="java.lang.Integer">
+        select count(1) as rol_num from(
+            select d.rol_name from dms_opera_log a
+            left join dms_user b on a.user_name=b.uname
+            left join dms_user_rol c on b.id=c.user_id
+            left join dms_role d on c.role_id=d.id
+            where a.time &gt; to_timestamp(#{startTime}, 'yyyy-mm-dd')
+            and a.time &lt; to_timestamp(#{endTime}, 'yyyy-mm-dd')
+            GROUP BY d.rol_name
+        ) as a
+    </select>
+
+    <select id="countPerRole" resultType="Map">
+        select d.rol_name, count(a.OPERATION) as rol_num from dms_opera_log a
+        left join dms_user b on a.user_name=b.uname
+        left join dms_user_rol c on b.id=c.user_id
+        left join dms_role d on c.role_id=d.id
+        where a.time &gt; to_timestamp(#{startTime}, 'yyyy-mm-dd')
+            and a.time &lt; to_timestamp(#{endTime}, 'yyyy-mm-dd')
+        GROUP BY d.rol_name
+        ORDER BY d.rol_name
+    </select>
+
+</mapper>

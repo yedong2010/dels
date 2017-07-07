@@ -1,0 +1,35 @@
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li style="cursor: pointer" ng-click="goFeedback()"><a><i class="fa fa-dashboard"></i>数据质量反馈</a></li>
+        <li class="active">反馈具体内容</li>
+    </ol>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th olspan="2" >标题</th>
+                        <td colspan="7" ng-bind="feedbackTitle" align="center"></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th olspan="2" >反馈</th>
+                        <td colspan="1" ng-bind="editUser"></td>
+                        <td colspan="9" ng-bind="feedbackContent"></td>
+                    </tr>
+                    <tr ng-if="correctUser!=null">
+                        <th olspan="2" >修正</th>
+                        <td colspan="1" ng-bind="correctUser"></td>
+                        <td colspan="6" ng-bind="correctContent"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>

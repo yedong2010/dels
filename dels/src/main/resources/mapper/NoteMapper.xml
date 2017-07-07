@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dels.dao.NoteMapper">
+    <resultMap id="BaseResultMap" type="com.dels.model.chat.Note">
+        <result column="id" jdbcType="VARCHAR" property="id" />
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="author" jdbcType="VARCHAR" property="author" />
+        <result column="status" jdbcType="CHAR" property="status" />
+        <result column="count" jdbcType="BIGINT" property="count" />
+        <result column="ctime" jdbcType="TIMESTAMP" property="ctime" />
+        <result column="utime" jdbcType="TIMESTAMP" property="utime" />
+        <result column="theme" jdbcType="VARCHAR" property="theme" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, content, author, status, count, ctime, utime, theme
+    </sql>
+    <!--主题管理——管理员状态，查询所有主题列表-->
+    <select id="selectAll" resultType="com.dels.model.chat.Note">
+         SELECT n.ID,n.author,n.status,COALESCE(m.c,0) as count,n.content,n.ctime,n.theme,n.utime,r.CONTENT AS lastReply,r.ctime AS rtime FROM dms_note n LEFT JOIN (
+            SELECT * FROM (
+                SELECT uid,uname,CONTENT,ctime,RANK () OVER (PARTITION BY uid ORDER BY ctime DESC) RANK FROM dms_reply
+            where status='1'
+                        ) T WHERE T . RANK = 1
+                    ) r ON n.ID = r.uid
+                 left join
+            ( select uid, count(1) c from dms_reply where status='1' group by uid) as m on n.id=m.uid
+        <![CDATA[
+            where n.status <> '-1'
+        ]]>
+            order by n.ctime desc
+    </select>
+
+    <!--主题列表——一般用户可以查看到所有已经发布的主题-->
+    <select id="selectPublished" resultType="com.dels.model.chat.Note">
+        SELECT n.ID,n.author,n.status,COALESCE(m.c,0) as count,n.ctime,n.theme,n.utime,r.uname,r.CONTENT AS lastReply,r.ctime AS rtime FROM dms_note n LEFT JOIN (
+            SELECT * FROM (
+                SELECT uid,uname,CONTENT,ctime,RANK () OVER (PARTITION BY uid ORDER BY ctime DESC) RANK FROM dms_reply
+            where status='1'
+                        ) T WHERE T . RANK = 1
+                    ) r ON n.ID = r.uid
+                 left join
+            ( select uid, count(1) c from dms_reply where status='1' group by uid) as m on n.id=m.uid
+        where n.status='1'
+        order by COALESCE(m.c,0) desc, n.ctime desc
+    </select>
+
+    <!--评论管理——查看有多少主题存在需要审核的评论-->
+    <select id="approveList" resultType="com.dels.model.chat.Note">
+        SELECT n.ID,n.author,n.status,COALESCE(m.c,0) as count,n.ctime,n.theme
+        FROM dms_note n left JOIN (
+           select uid, count(1) c from dms_reply where status='0' group by uid) as m on n.id=m.uid
+        where n.status='1'
+           order by COALESCE(m.c,0) desc
+    </select>
+
+    <!--评论管理——点击该主题显示所有评论-->
+    <select id="replyList" resultType="com.dels.model.chat.Note">
+        <![CDATA[
+        select * from dms_reply where uid = #{id} and status<>'-1' order by ctime desc
+        ]]>
+    </select>
+
+    <!--主题管理——用户只能查看自己的主题列表-->
+    <select id="selectByAuthor" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List"/> from dms_note where author=#{author}
+        <![CDATA[
+         and status<>'-1'
+                ]]>
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List"/> from dms_note where id=#{id}
+        <![CDATA[
+         and status<>'-1'
+                ]]>
+    </select>
+
+    <insert id="addNote" parameterType="com.dels.model.chat.Note">
+        insert into dms_note(
+        <include refid="Base_Column_List" />
+        )
+        values(#{id},#{content},#{author},#{status},#{count},#{ctime},#{utime},#{theme})
+    </insert>
+
+    <!--主题管理——删除主题-->
+    <update id="delNoteById">
+        UPDATE dms_note set status = '-1' where id=#{id}
+    </update>
+
+    <!--评论管理——删除评论-->
+    <update id="delReplyById">
+        UPDATE dms_reply set status = '-1' where id=#{id}
+    </update>
+
+    <!--评论管理——审核通过评论-->
+    <update id="approveReplyById">
+        UPDATE dms_reply set status = '1' where id=#{id}
+    </update>
+
+    <update id="uptItem" parameterType="com.dels.model.chat.Note">
+        update dms_note set content= #{content},utime=#{utime},theme=#{theme},status=#{status} where id=#{id}
+    </update>
+
+    <insert id="addReply" parameterType="com.dels.model.chat.Reply">
+        insert into dms_reply(id, content, uname, status, ctime, uid)
+        values(#{id},#{content},#{uname},#{status},#{ctime},#{uid})
+    </insert>
+
+    <update id="uptCount">
+        update dms_note set count= count+1 where id=#{id}
+    </update>
+
+    <select id="getReplys" resultType="com.dels.model.chat.Reply">
+        select id, content, uname, ctime from dms_reply where uid=#{id} and status = '1' order by ctime
+    </select>
+</mapper>

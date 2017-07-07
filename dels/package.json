@@ -1,0 +1,25 @@
+{
+  "name": "dim",
+  "version": "1.0.0",
+  "description": "广东省网上办事大厅数据监测系统",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "数据监测",
+    "网上办事大厅",
+    "广东省"
+  ],
+  "author": "zengxiaofan",
+  "license": "ISC",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-cssmin": "^1.0.2",
+    "grunt-contrib-jshint": "^1.1.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-ngdocs": "^0.2.10"
+  }
+}

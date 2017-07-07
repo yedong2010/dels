@@ -86,3 +86,7 @@ def validUsefulProxy(proxy):
     except Exception as e:
         print('%s is not ' % proxy)
         return False
+
+
+if __name__ == '__main__':
+    validUsefulProxy('116.226.80.15:808')

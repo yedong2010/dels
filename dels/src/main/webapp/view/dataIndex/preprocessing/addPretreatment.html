@@ -1,0 +1,46 @@
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li style="cursor: pointer" ng-click="goBack()"><a><i class="fa fa-dashboard"></i>预处理配置</a></li>
+        <li class="active">增加规则</li>
+    </ol>
+</section>
+
+<section class="content">
+    <form class="form-horizontal" name="addRule" Rule="form" style="position: relative;top: 80px;width: 800px;left: 10px;">
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">规则名称</label>
+            <span style="color:red">*</span>
+            <div class="col-sm-7">
+                <input type="text" class="form-control" ng-exists="addRuleName" name="addRuleName" id="name" ng-model="ruleName" ng-maxlength="50" required>
+                <p ng-show="addRule.addRuleName.$error.exists && addRule.addRuleName.$dirty" class="help-block" style="color: red">规则已存在.</p>
+                <p ng-show="addRule.addRuleName.$error.maxlength && addRule.addRuleName.$dirty" style="color:red" class="help-block">规则名称最长是50字符</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">分组</label>
+            <span style="color:red">*</span>
+            <div class="col-sm-7">
+                <select ng-model="selectedRule" class="form-control" required>
+                    <option ng-repeat="x in rules" value="{{x.id}}">{{x.name}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 col-md-offset-2 control-label">规则内容</label>
+            <span style="color:red">*</span>
+            <div class="col-sm-7">
+                <textarea id="ruleDesc" name="ruleDesc" class="form-control" rows="6" placeholder="描述"  ng-model="ruleDes" ng-maxlength="500" required></textarea>
+                <p ng-show="addRule.ruleDesc.$error.maxlength && addRule.ruleDesc.$dirty" style="color:red" class="help-block">规则内容最长是500字符</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-offset-6 col-sm-1">
+                <button class="btn btn-default" ng-click="addRuleSub()" ng-disabled="addRule.$invalid">增加</button>
+            </div>
+            <div class="col-sm-offset-1 col-sm-1">
+                <button type="button" class="btn btn-default" ng-click="goBack()">取消</button>
+            </div>
+        </div>
+    </form>
+</section>

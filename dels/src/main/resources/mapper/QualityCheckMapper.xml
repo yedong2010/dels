@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dels.dao.QualityCheckMapper">
+
+    <select id="findRoleId" parameterType="String" resultType="String">
+        select role_id from dms_user a
+        left join dms_user_rol b on a.id=b.user_id
+        where a.uname=#{userName}
+    </select>
+
+    <select id="findQKList" parameterType="com.dels.model.monitor.QualityCheckModel" resultType="com.dels.model.monitor.QualityCheckModel">
+        select
+             id, title, question,  result_msg as resultMsg,
+             STATE, edit_user as editUser,
+             edit_time as editTime, appeal_user as appealUser,
+             appeal_time as appealTime,  resolve_user as resolveUser,
+             resolve_time as resolveTime
+        from dms_quality_check
+        where 1=1
+        <if test="states!=null">
+            and a.state in
+            <foreach collection="states" item="item" index="index"  open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="null != editUser and editUser != ''">
+            and edit_user = #{editUser}
+        </if>
+        <if test="null != title and title != ''">
+            and title = #{title}
+        </if>
+        <if test="null != id and id != ''">
+            and id = #{id}
+        </if>
+        <if test="null != state and state != ''">
+            and state = #{state}
+        </if>
+        ORDER  BY edit_time desc
+    </select>
+
+    <select id="findSeq" resultType="java.lang.Integer">
+        select nextval('quality_check_seq')
+    </select>
+
+    <insert id="insertQuality" parameterType="com.dels.model.monitor.QualityCheckModel">
+        INSERT INTO dms_quality_check(id, title, question, edit_user, state)
+        VALUES(#{id}, #{title}, #{question}, #{editUser}, #{state})
+    </insert>
+
+    <update id="updateQuality" parameterType="com.dels.model.monitor.QualityCheckModel">
+        UPDATE dms_quality_check
+        SET state = #{state}
+        <if test="null != title and title != '' ">
+            ,title = #{title}
+        </if>
+        <if test="null != question and question != '' ">
+            ,question = #{question}
+        </if>
+
+        <if test="null != appealUser and appealUser != '' ">
+            ,appeal_user = #{appealUser}
+            ,appeal_time = CURRENT_TIMESTAMP (0)
+        </if>
+        <if test="null != resolveUser and resolveUser != '' ">
+            ,result_msg = #{resultMsg}
+            ,resolve_user = #{resolveUser}
+            ,resolve_time = CURRENT_TIMESTAMP(0)
+        </if>
+        where id = #{id}
+
+    </update>
+
+</mapper>

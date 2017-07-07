@@ -1,0 +1,97 @@
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li ng-click="goBack()" style="cursor: pointer"><a><i class="fa fa-dashboard"></i>预处理配置</a></li>
+        <li class="active">分组管理</li>
+    </ol>
+    <div class="btn-group">
+        <a class="btn btn-default" aria-hidden="true" data-toggle="modal" data-target="#addGroup">新增</a>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>组别名称</th>
+                        <th>创建用户</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-if="vm.items == null">
+                        <td colspan="5">
+                            <div class="text-center">
+                                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr ng-if="vm.items != null && vm.items.length == 0">
+                        <td colspan="5">暂无数据</td>
+                    </tr>
+                    <tr ng-repeat="item in vm.items|orderBy:col:desc|filter:vm.filter|paging:vm.page.index:vm.page.size ">
+                        <td>{{item.index}}</td>
+                        <td>{{item.name}}</td>
+                        <td>{{item.user_name}}</td>
+                        <td>{{item.ctime}}</td>
+                        <td>
+                            <i data-toggle="tooltip" data-placement="top" title="删除"><i class="btn fa fa-trash" aria-hidden="true" data-toggle="modal" data-target="#delGroupModal" ng-click="getDelGroup(item.id,item.name)"></i></i>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal fade" id="delGroupModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <form role="form">
+                                <nobr><label class="control-label">删除分组<span id="delRuleName" style="color: blue">{{delGroupName}}</span>？</label></nobr>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                            </button>
+                            <button type="button" class="btn btn-primary" ng-click="delRule()">
+                                确定
+                            </button>
+                        </div>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+            <div class="modal fade" id="addGroup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form name="addGroupForm" class="form-group">
+                            <div class="modal-body">
+                                <label class="control-label">新增组名</label>
+                                <input type="text" class="form-control" ng-exists="addGroup" name="addGroup" id="addaddGroupName" ng-model="addGroupName" ng-maxlength="50" required>
+                                <p ng-show="addGroupForm.addGroup.$error.exists && addGroupForm.addGroup.$dirty" class="help-block" style="color: red">分组已存在</p>
+                                <p ng-show="addGroupForm.addGroup.$error.maxlength && addGroupForm.addGroup.$dirty" style="color:red" class="help-block">组名最长为50字符</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" ng-click="closeAddGroupModal()">关闭</button>
+                                <button type="button" class="btn btn-primary" ng-click="addGroup()" ng-disabled="addGroupForm.$invalid">增加</button>
+                            </div>
+                        </form>
+                    </div><!-- /.modal-content -->
+                </div><!-- /.modal -->
+            </div>
+            <div class="col-md-2">
+                <select ng-model="vm.page.size" class="form-control" title="每页条目数"
+                        ng-options="pageSize for pageSize in [5, 10, 20, 50]"></select>
+            </div>
+            <div class="col-md-10">
+                <uib-pagination total-items="vm.items|size" ng-model="vm.page.index" max-size="5"
+                                items-per-page="vm.page.size" class="pagination-sm pull-right" boundary-links="true"
+                                previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+                                last-text="&raquo;"></uib-pagination>
+                <span class="list-nav-num pull-right form-group">共有{{vm.items.length}}条，每页显示：{{vm.page.size}}条</span>
+            </div>
+        </div>
+    </div>
+</section>
