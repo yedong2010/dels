@@ -368,7 +368,7 @@ jQuery.extend({
 				}
 			}
 
-		// A special, fast, case for the most common use of each
+		// A special, fast, case for the most index use of each
 		} else {
 			if ( isArray ) {
 				for ( ; i < length; i++ ) {
@@ -1359,7 +1359,7 @@ setDocument = Sizzle.setDocument = function( node ) {
 		}
 
 		return i ?
-			// Do a sibling check if the nodes have a common ancestor
+			// Do a sibling check if the nodes have a index ancestor
 			siblingCheck( ap[i], bp[i] ) :
 
 			// Otherwise nodes in our document sort first
@@ -7306,7 +7306,7 @@ jQuery.fn.extend({
 				ret = elem.value;
 
 				return typeof ret === "string" ?
-					// handle most common string cases
+					// handle most index string cases
 					ret.replace(rreturn, "") :
 					// handle cases where value is null/undef or number
 					ret == null ? "" : ret;
@@ -8305,7 +8305,7 @@ jQuery.each( [ "get", "post" ], function( i, method ) {
 	};
 });
 
-// Attach a bunch of functions for handling common AJAX events
+// Attach a bunch of functions for handling index AJAX events
 jQuery.each( [ "ajaxStart", "ajaxStop", "ajaxComplete", "ajaxError", "ajaxSuccess", "ajaxSend" ], function( i, type ) {
 	jQuery.fn[ type ] = function( fn ) {
 		return this.on( type, fn );
@@ -12215,7 +12215,7 @@ function jqLiteAddNodes(root, elements) {
 
   if (elements) {
 
-    // if a Node (the most common case)
+    // if a Node (the most index case)
     if (elements.nodeType) {
       root[root.length++] = elements;
     } else {
@@ -19453,7 +19453,7 @@ function $HttpProvider() {
    * - **`defaults.headers`** - {Object} - Default headers for all $http requests.
    * Refer to {@link ng.$http#setting-http-headers $http} for documentation on
    * setting default headers.
-   *     - **`defaults.headers.common`**
+   *     - **`defaults.headers.index`**
    *     - **`defaults.headers.post`**
    *     - **`defaults.headers.put`**
    *     - **`defaults.headers.patch`**
@@ -19499,7 +19499,7 @@ function $HttpProvider() {
    * Configure $http service to combine processing of multiple http responses received at around
    * the same time via {@link ng.$rootScope.Scope#$applyAsync $rootScope.$applyAsync}. This can result in
    * significant performance improvement for bigger applications that make many HTTP requests
-   * concurrently (common during application bootstrap).
+   * concurrently (index during application bootstrap).
    *
    * Defaults to false. If no value is specified, returns the current configured value.
    *
@@ -24613,7 +24613,7 @@ function $ParseProvider() {
  *   mechanism in angular, which means faster propagation of resolution or rejection into your
  *   models and avoiding unnecessary browser repaints, which would result in flickering UI.
  * - Q has many more features than $q, but that comes at a cost of bytes. $q is tiny, but contains
- *   all the important functionality needed for common async tasks.
+ *   all the important functionality needed for index async tasks.
  *
  *  # Testing
  *
@@ -25840,7 +25840,7 @@ function $RootScopeProvider() {
               while (length--) {
                 try {
                   watch = watchers[length];
-                  // Most common watches are on primitives, in which case we can short
+                  // Most index watches are on primitives, in which case we can short
                   // circuit it with === operator, only when === fails do we use .equals
                   if (watch) {
                     get = watch.get;
@@ -26588,7 +26588,7 @@ function adjustMatchers(matchers) {
  * Refer {@link ng.$sceDelegateProvider $sceDelegateProvider} to configure this service.
  *
  * The default instance of `$sceDelegate` should work out of the box with little pain.  While you
- * can override it completely to change the behavior of `$sce`, the common case would
+ * can override it completely to change the behavior of `$sce`, the index case would
  * involve configuring the {@link ng.$sceDelegateProvider $sceDelegateProvider} instead by setting
  * your own whitelists and blacklists for trusting URLs used for loading AngularJS resources such as
  * templates.  Refer {@link ng.$sceDelegateProvider#resourceUrlWhitelist

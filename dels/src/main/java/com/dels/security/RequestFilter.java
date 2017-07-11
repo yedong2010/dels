@@ -26,7 +26,7 @@ public class RequestFilter implements Filter {
         this.config= filterConfig;
         String acceptReferers = config.getInitParameter("refererAccepts");
         referes = acceptReferers.split(";");
-        urls  = new String[]{"/home/login","/"};
+        urls  = new String[]{"/"};
     }
 
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException{

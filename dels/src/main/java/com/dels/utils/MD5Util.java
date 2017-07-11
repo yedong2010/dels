@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  * @description MD5加密工具类
- * @author z11595
- * @time 2016年12月22日 下午4:41:58
+ * @author MaytoMarry
+ * @time 2017-07-11
  */
 public class MD5Util {
     private static Logger logger = LoggerFactory.getLogger(MD5Util.class);

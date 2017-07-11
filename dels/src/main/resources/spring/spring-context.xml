@@ -11,12 +11,12 @@
                         http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
 
     <!-- 自动扫描bean -->
-    <context:component-scan base-package="com.h3c.bigdata.dms.service.impl,com.h3c.bigdata.dms.security" use-default-filters="false">
+    <context:component-scan base-package="com.dels.service.impl,com.dels.security" use-default-filters="false">
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
     </context:component-scan>
 
     <!--扫描切面类注解 l13595 2017/1/12 9:27-->
-    <context:component-scan base-package="com.h3c.bigdata.dms.security"></context:component-scan>
+    <context:component-scan base-package="com.dels.security"></context:component-scan>
     <!-- 让aspectJ的注解起作用  l13595 2017/1/12 9:27-->
     <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
 
@@ -34,9 +34,8 @@
     <import resource="classpath:spring/spring-mybatis.xml" />
 
     <!--引入spring security相关文件  -->
-    <!--<import resource="classpath:spring/spring-security.xml" />-->
-    <import resource="classpath:spring/spring-securitys.xml" /><!--添加验证码-->
+    <import resource="classpath:spring/spring-security.xml" />
 
     <!--引入spring aop相关文件  -->
-    <import resource="classpath:spring/spring-aop.xml" />
+    <!--<import resource="classpath:spring/spring-aop.xml" />-->
 </beans>

@@ -90,46 +90,6 @@
             </ul>
         </section>
     </aside>
-    <div class="modal fade" id="userModPassPage" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                        &times;
-                    </button>
-                    <h6 class="modal-title" id="myModalLabel">
-                        更新密码
-                    </h6>
-                </div>
-                <div class="modal-body">
-                    <form role="form" name="modPass" id="modPassForm">
-                        <div class="form-group">
-                            <label class="control-label">请输入当前登录用户密码</label>
-                            <input type="password" autocomplete="off" id="oriPass1" class="form-control" ng-model="oriPass1" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label">输入要修改的新密码</label>
-                            <input type="password" autocomplete="off" class="form-control" id="modPass3" name="password1" ng-minlength="8" ng-maxlength="25" ng-pattern="/^(?=.*?[a-zA-Z])(?=.*?[0-9])(?=.*?[_\-@&=!#$%^*])[a-zA-Z0-9_\-@&=!#$%^*]+$/" ng-model="modPass3" required>
-                            <p ng-show="modPass.password1.$error.minlength && modPass.password1.$dirty" style="color:red" class="help-block">密码最少8位</p>
-                            <p ng-show="modPass.password1.$error.pattern && modPass.password1.$dirty" style="color:red" class="help-block">密码要包含字母,数字以及特殊字符_\-@&=!#$%^*</p>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label">再次输入修改的新密码</label>
-                            <input type="password" autocomplete="off" class="form-control" id="modPass4" ng-compare="password1" name="confirmPassword1" ng-model="modPass4" required>
-                            <p ng-show="!modPass.confirmPassword1.$error.required && modPass.confirmPassword1.$error.compare && modPass.confirmPassword1.$dirty" style="color:red" class="help-block">重输密码不相同.</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭
-                            </button>
-                            <button type="button" class="btn btn-primary" ng-click="modPassById1()" ng-disabled="modPass.$invalid">
-                                提交更改
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal -->
-    </div>
     <div class="content-wrapper" ui-view></div>
 </div>
 <div id="pop" style="display:none;">

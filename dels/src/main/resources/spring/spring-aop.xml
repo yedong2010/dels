@@ -15,8 +15,8 @@
         <!-- 第2步：配置一个切面 -->
         <aop:aspect id="powerAspect" ref="powerAspectBean">
             <!-- 第3步：定义切入点,指定切入点表达式 -->
-            <aop:pointcut id="allMethod"
-                expression="execution(* com.h3c.bigdata.dms.service.impl.monitor.*.*(..,java.util.List))" />
+           <!-- <aop:pointcut id="allMethod"
+                expression="execution(* com.dels.service.impl.*.*(..,java.util.List))" />-->
             <!-- 第4步：应用前置通知 -->
             <!-- <aop:before method="before" pointcut-ref="allMethod" /> -->
             <!-- 第5步：应用后置通知 -->
@@ -26,7 +26,7 @@
             <!-- 第7步：应用抛出异常后通知 -->
             <!-- <aop:after-throwing method="afterThrowing" pointcut-ref="allMethod"/> -->
             <!-- 第8步：应用环绕通知 -->
-            <aop:around method="doAround" pointcut-ref="allMethod" />
+           <!-- <aop:around method="doAround" pointcut-ref="allMethod" />-->
         </aop:aspect>
     </aop:config>
 </beans>
