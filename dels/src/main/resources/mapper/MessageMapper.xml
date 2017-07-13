@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dels.dao.index.MessageMapper">
+    <resultMap id="BaseResultMap" type="com.dels.model.index.Message">
+        <id column="id" property="cid" jdbcType="INTEGER"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="checktime" property="checktime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, content, status, checktime
+    </sql>
+    <select id="selectContents" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from messages
+        where status=0 order by id desc limit 100
+    </select>
+
+    <insert id="insertMessage" parameterType="java.lang.String">
+        insert into messages (content) values (#{content})
+    </insert>
+
+</mapper>

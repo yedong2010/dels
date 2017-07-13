@@ -45,6 +45,7 @@
         <div class="cover-container">
             <div class="mastfoot">
                 <div class="inner">
+                    <hr />
                     <p>11年入A站，一直都只是看看，很少评论，很是怀恋2年前delete-so，一个月前临时起意想要做个简单版的delete-so，
                         只有查询的功能（精力有限），所以加了个mini，也很感谢delete-so作者的同意，部分代码参考delete-so的开源代码,
                         大家低调使用, 说不定哪天就被猴王封了, by May-to-Marry.</p>

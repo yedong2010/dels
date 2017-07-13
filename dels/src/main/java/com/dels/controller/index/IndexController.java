@@ -1,7 +1,9 @@
 package com.dels.controller.index;
 
 import com.dels.model.index.Accomment;
+import com.dels.model.index.Message;
 import com.dels.service.index.IAccommentService;
+import com.dels.service.index.IMessageService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +33,11 @@ public class IndexController {
     @Autowired
     IAccommentService acService;
 
+    @Autowired
+    IMessageService msService;
+
     /**
-     *
+     * 查询ac评论
      * @param req
      * @return
      */
@@ -40,6 +46,28 @@ public class IndexController {
         log.info("query acid:" + req);
         return acService.getDelAccBAcId(req.get("acid"));
     }
+
+    /**
+     * 查看留言板
+     * @return
+     */
+    @RequestMapping(value = "querycontents", method = {RequestMethod.GET})
+    public List<Message> queryContents(){
+        log.info("query contents:" + new Date());
+        return msService.getMessages();
+    }
+
+    /**
+     * 插入留言
+     * @param req
+     * @return
+     */
+    @RequestMapping(value = "insercontent", method = {RequestMethod.POST})
+    public String insertContent(@RequestBody Map<String, String> req){
+        log.info("insert contents:" + req);
+        return msService.insertMessage(req.get("content"));
+    }
+
 
 
 }
