@@ -10,7 +10,7 @@
    <!-- 引入数据库等配置文件 -->
     <context:property-placeholder location="classpath:jdbc.properties" ignore-unresolvable="true" />
 
-    <!-- 定义数据监测系统元数据的数据源 -->
+    <!-- 定义系统元数据的数据源 -->
     <bean id="dels" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
         <property name="driverClassName" value="${jdbc.driver}" />
         <property name="url" value="${jdbc.jdbcUrl}" />
@@ -45,7 +45,7 @@
     <!-- DAO接口所在包名，Spring会自动扫描其下的类 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <!-- 自动扫描dao接口 -->
-        <property name="basePackage" value="com.h3c.bigdata.dms.dao.monitor" />
+        <property name="basePackage" value="com.dels.dao.*" />
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
     </bean>
 

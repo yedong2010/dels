@@ -4,18 +4,19 @@ var underscore = angular.module('underscore', []);
 underscore.factory('_', function () {
     return window._;
 });
-var app = angular.module('dms', ['ui.router', 'ui.bootstrap', "highcharts-ng", 'toastr', 'textAngular']);
+var app = angular.module('dels', ['ui.router', 'ui.bootstrap', "highcharts-ng", 'toastr', 'textAngular']);
 
 /**
  * @description 定义当前ui-router的路由跳转
  */
 app.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
     // 默认页
-    $urlRouterProvider.otherwise("/index");
+    $urlRouterProvider.otherwise("/index/main");
     // 主页面
     $stateProvider.state('index', {
-        url: "/index",
-        templateUrl: './view/public/index.html'
+        url: "/index/main",
+        controller: "mainCtrl",
+        templateUrl: './view/index/main.html'
     })
 }]);
 

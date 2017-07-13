@@ -1,382 +1,170 @@
-html, body {
-    font-family: Microsoft YaHei;
-    width: 100%;
-    height: 100%;
-}
+/*
+ * Globals
+ */
 
-/*设置当前菜单栏的最大高度*/
-.main-header {
-    position: relative;
-    max-height: 150px;
-    z-index: 1030;
-}
-
-.main-header .logo {
-    background-color: #3c8dbc;
-    color: #fff;
-    border-bottom: 0 solid transparent;
-}
-
-.content-wrapper {
-    background-color: #ffffff;
-}
-
-.main-header .navbar {
-    background-color: #3c8dbc;
-}
-
-.main-header .navbar .sidebar-toggle, .main-header .navbar .nav > li > a {
+/* Links */
+a,
+a:focus,
+a:hover {
     color: #fff;
 }
 
-.main-header .navbar .nav > li > a:active, .main-header .navbar .nav > li:active > a, .main-header .navbar .nav > .active > a, .main-header .navbar .nav > .active > a:hover {
-    color: #209DCF;
+body {
+    font-family: 'Microsoft YaHei', sans-serif;
+}
+
+/* Custom default button */
+.btn-default,
+.btn-default:hover,
+.btn-default:focus {
+    color: #333;
+    text-shadow: none; /* Prevent inheritance from `body` */
     background-color: #fff;
+    border: 1px solid #fff;
 }
 
-.main-header .navbar .sidebar-toggle:hover {
-    background-color: #3c8dbc;
-}
 
-.main-header .navbar .nav > li > a:hover, .nav .open > a, .nav .open > a:focus, .nav .open > a:hover {
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, .2);
-}
+/*
+ * Base structure
+ */
 
-.wrapper, .main-sidebar, .left-side {
-    background-color: #f4f4f5;
-}
-
-.sidebar-menu > li:hover > a, .sidebar-menu > li.active > a {
-    color: #000;
-    background: #f9f9f9;
-}
-
-.sidebar-menu > li {
-    -webkit-transition: border-left-color .3s ease;
-    -o-transition: border-left-color .3s ease;
-    transition: border-left-color .3s ease;
-}
-
-.sidebar-menu > li > a {
-    border-left: 3px solid transparent;
-    font-weight: 600;
-}
-
-.sidebar a {
-    color: #444;
-}
-
-.treeview-menu > li.active > a, .treeview-menu > li > a:hover {
-    color: #000;
-}
-
-.treeview-menu > li > a {
-    color: #777;
-}
-
-.treeview-menu {
-    background: #f9f9f9;
-}
-
-.list-nav-num {
-    margin-top: 5px;
-    margin-right: 15px;
-}
-
-.sidebar-menu .treeview-menu > li > a {
-    padding: 5px 5px 5px 15px;
-    display: block;
-    font-size: 14px;
-    margin-left: 15%;
-}
-
-.t_chart {
-    height: 300px;
-}
-
-.rs-12 {
+html,
+body {
     height: 100%;
+    background-color: #333;
 }
-
-.rs-4 {
-    height: 30%;
-    text-align: right;
-    background: url("../img/dboder.png") no-repeat;
-    background-size: 80px 80px;
-    background-position: right;
-    line-height: 90px;
-
-}
-
-.rs-4 h5, h2 {
-    text-indent: 2px;
-    margin-top: 5px;
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.form-inline {
-    margin-bottom: 15px;
-}
-
-table a {
-    cursor: pointer;
-}
-
-table td, table th {
+body {
+    color: #fff;
     text-align: center;
+    text-shadow: 0 1px 3px rgba(0,0,0,.5);
 }
 
-.btn {
-    border-radius: 0px;
+/* Extra markup and styles for table-esque vertical and horizontal centering */
+.site-wrapper {
+    display: table;
+    width: 100%;
+    height: 100%; /* For at least Firefox */
+    min-height: 100%;
+    -webkit-box-shadow: inset 0 0 100px rgba(0,0,0,.5);
+    box-shadow: inset 0 0 100px rgba(0,0,0,.5);
+}
+.site-wrapper-inner {
+    /*display: table-cell;*/
+    vertical-align: top;
+}
+.cover-container {
+    margin-right: auto;
+    margin-left: auto;
+}
+.top-height{
+    height: 200px;
 }
 
-.cursor-p {
-    cursor: pointer;
+/* Padding for spacing */
+.inner {
+    padding: 30px;
 }
 
-.rate-padding {
-    padding: 10px 15px 10px 15px;
+
+/*
+ * Header
+ */
+.masthead-brand {
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
-.blue-border {
-    border: 1px solid #00acd6;
-    vertical-align: middle;
-    text-align: center;
+.masthead-nav > li {
+    display: inline-block;
+}
+.masthead-nav > li + li {
+    margin-left: 20px;
+}
+.masthead-nav > li > a {
+    padding-right: 0;
+    padding-left: 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff; /* IE8 proofing */
+    color: rgba(255,255,255,.75);
+    border-bottom: 2px solid transparent;
+}
+.masthead-nav > li > a:hover,
+.masthead-nav > li > a:focus {
+    background-color: transparent;
+    border-bottom-color: #a9a9a9;
+    border-bottom-color: rgba(255,255,255,.25);
+}
+.masthead-nav > .active > a,
+.masthead-nav > .active > a:hover,
+.masthead-nav > .active > a:focus {
+    color: #fff;
+    border-bottom-color: #fff;
 }
 
-.blue-border > h3 {
-    margin: 20px;
+@media (min-width: 768px) {
+    .masthead-brand {
+        float: left;
+    }
+    .masthead-nav {
+        float: right;
+    }
 }
 
-.blue-border .label {
-    margin: 5px;
-}
 
-.form-inline select {
-    margin-right: 15px;
-}
+/*
+ * Cover
+ */
 
-i {
-    margin-right: 5px;
+.cover {
+    padding: 0 20px;
 }
-
-::-webkit-scrollbar {
-    width: 14px;
-    height: 14px;
-}
-
-::-webkit-scrollbar-track,
-::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    border: 5px solid transparent;
-}
-
-::-webkit-scrollbar-track {
-    box-shadow: 1px 1px 5px rgba(0, 0, 0, .2) inset;
-}
-
-::-webkit-scrollbar-thumb {
-    min-height: 20px;
-    background-clip: content-box;
-    box-shadow: 0 0 0 5px rgba(0, 0, 0, .2) inset;
-}
-
-::-webkit-scrollbar-corner {
-    background: transparent;
-}
-
-/*排序的背景图样式*/
-.up {
-    background: url('../img/up.png') no-repeat;
-    background-position: 95% 80%;
-    padding-right: 10px !important;
-    background-size: 10px;
-}
-
-.down {
-    background: url('../img/down.png') no-repeat;
-    background-position: 95% 80%;
-    padding-right: 10px !important;
-    background-size: 10px;
-}
-
-.align-left {
-    text-align: left;
-}
-
-.blue-border > h4 {
+.cover .btn-lg {
+    padding: 10px 20px;
     font-weight: bold;
 }
 
-.form-inline .checkbox {
-    margin-right: 10px;
+
+/*
+ * Footer
+ */
+
+.mastfoot {
+    color: #999; /* IE8 proofing */
+    color: rgba(255,255,255,.5);
 }
 
-#toast-container {
-    top: 550px !important;
+
+/*
+ * Affix and center
+ */
+
+@media (min-width: 768px) {
+    /* Pull out the header and footer */
+    .masthead {
+        position: fixed;
+        top: 0;
+    }
+    .mastfoot {
+        position: fixed;
+        bottom: 0;
+    }
+    /* Start the vertical centering */
+    .site-wrapper-inner {
+        vertical-align: middle;
+    }
+    /* Handle the widths */
+    .masthead,
+    .mastfoot,
+    .cover-container {
+        width: 100%; /* Must be percentage or pixels for horizontal alignment */
+    }
 }
 
-.disclick {
-    pointer-events: none;
-    color: #333;
-}
-
-.modal-content {
-    top: 200px;
-}
-
-.m-left-7 {
-    margin-left: 7px;
-}
-
-.m-right-15 {
-    margin-right: 15px;
-}
-
-.pointer {
-    cursor: pointer;
-}
-
-.discuss-title {
-    border-left: 4px solid rgb(49, 113, 249);
-    padding-left: 5px;
-    margin-bottom: 20px;
-    font-family: "Microsoft YaHei", Arial, Helvetica, sans-serif, 宋体;
-    font-size: 16px;
-    line-height: 16px;
-}
-
-.p_tail {
-    color: #999;
-    font-size: 10px;
-}
-
-.green-block {
-    color: #77C573;
-    font-size: 16px;
-}
-
-.yellow-block {
-    background: #FF7F42;
-    color: #FFF;
-    padding: 1px 4px;
-}
-
-.threadlist_bright {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.threadlist_bright li.thread_top_list_folder {
-    border-bottom: 0;
-    padding: 0;
-    background-color: #fff;
-    position: relative;
-    margin: 0;
-}
-
-.threadlist_bright li {
-    position: relative;
-    border-bottom: 1px dotted #e4e6eb;
-}
-
-.clearfix {
-    zoom: 1;
-}
-
-.icon_top_folder {
-    display: none;
-    position: absolute;
-    left: -24px;
-    top: 0;
-    width: 24px;
-    height: 86px;
-    background: url(http://tb2.bdstatic.com/tb/img/top_folder_140e4b2.png);
-}
-
-.threadlist_bright .t_con {
-    padding: 10px 0;
-    margin: 0 20px;
-}
-
-.forum_content .t_con .col2_left, .forum_content .t_con .col2-left {
-    width: 70px;
-}
-
-.col2_left {
-    float: left;
-    min-height: 1px;
-}
-
-.threadlist_rep_num {
-    display: inline-block;
-    width: 50px;
-    height: 30px;
-    line-height: 26px;
-    margin-right: 20px;
-    text-align: center;
-    background: url(http://tb2.bdstatic.com/tb/img/f_reply_bg_89030dc.png) no-repeat;
-}
-
-.threadlist_bright .t_con span {
-    vertical-align: middle;
-}
-
-.threadlist_title {
-    font-size: 14px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 460px;
-}
-
-.threadlist_author {
-    width: 205px;
-    color: #999;
-}
-
-.threadlist_bright .threadlist_lz .tb_icon_author {
-    width: 135px;
-}
-
-.is_show_create_time {
-    display: none;
-}
-
-.last-username .icon-text, .author-info .icon-text {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 60px;
-    display: inline-block;
-}
-
-a:hover, a:focus, a:visited {
-    text-decoration: none;
-}
-
-.threadlist_bright .threadlist_author a {
-    color: #999;
-    text-decoration: none;
-}
-
-.threadlist_author .frs-author-name {
-    display: inline-block;
-    max-width: 67px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.threadlist_bright .fa-user, .threadlist_bright .fa-commenting-o {
-    height: 20px;
-    width: 20px;
-    vertical-align: middle;
-}
-
-.j_th_tit {
-    cursor: pointer;
+@media (min-width: 992px) {
+    .masthead,
+    .mastfoot,
+    .cover-container {
+        width: 700px;
+    }
 }

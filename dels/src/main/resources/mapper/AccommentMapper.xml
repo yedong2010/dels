@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dels.dao.index.AccommentMapper">
+    <resultMap id="BaseResultMap" type="com.dels.model.index.Accomment">
+        <id column="cid" property="cid" jdbcType="BIGINT"/>
+        <result column="content" property="content" jdbcType="VARCHAR"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="layer" property="layer" jdbcType="INTEGER"/>
+        <result column="acid" property="acid" jdbcType="BIGINT"/>
+        <result column="isdelete" property="isdelete" jdbcType="INTEGER"/>
+        <result column="checktime" property="checktime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        cid, content, username, layer, acid, isdelete, checktime
+    </sql>
+    <select id="selectByAcId" resultMap="BaseResultMap"
+        parameterType="java.lang.String">
+        select
+        <include refid="Base_Column_List"/>
+        from accomments
+        where acid = #{acid,jdbcType=VARCHAR} and isdelete=1 order by layer ASC
+    </select>
+
+</mapper>

@@ -10,19 +10,19 @@
     <security:http security="none" pattern="/index/**" />
     
     <!-- 配置自定义的登录页面 -->
-    <security:http auto-config="true" entry-point-ref="myEntryPoint">
+   <!-- <security:http auto-config="true" entry-point-ref="myEntryPoint">
         <security:intercept-url pattern="/**" access="ROLE_ADMIN" />
-        <!-- login-page用来指定自己定义的登录html页面， username-parameter用来指定该登陆页面中的用户名参数， password-parameter用来指定jsp页面中的用户密码参数 -->
+        &lt;!&ndash; login-page用来指定自己定义的登录html页面， username-parameter用来指定该登陆页面中的用户名参数， password-parameter用来指定jsp页面中的用户密码参数 &ndash;&gt;
         <security:form-login login-page="/manager/login" login-processing-url="/j_spring_security_check" username-parameter="uname"
             password-parameter="passwd" default-target-url="/#/index" authentication-failure-handler-ref="authenticationFailureHandler"
                 authentication-success-handler-ref="authenticationSuccessHandler"/>
         <security:logout invalidate-session="true" success-handler-ref="logoutSuccessHandler"  delete-cookies="JSESSIONID"/>
-        <!-- 防止用户登录多次 -->
+        &lt;!&ndash; 防止用户登录多次 &ndash;&gt;
         <security:session-management>
             <security:concurrency-control max-sessions="10" error-if-maximum-exceeded="true" expired-url="/home/login"/>
         </security:session-management>
     </security:http>
-    <!-- 用户验证、密码的加密验证 -->
+    &lt;!&ndash; 用户验证、密码的加密验证 &ndash;&gt;
     <security:authentication-manager>
         <security:authentication-provider user-service-ref="customUserDetailsService">
             <security:password-encoder ref="passwordEncoder" />
@@ -30,27 +30,27 @@
     </security:authentication-manager>
 
 
-    <!-- 通过自定义customUserDetailsService确定访问权限 -->
+    &lt;!&ndash; 通过自定义customUserDetailsService确定访问权限 &ndash;&gt;
     <bean class="com.dels.security.UserAuth" id="customUserDetailsService" />
-    
-    <!-- 对密码进行自定义校验 -->
+
+    &lt;!&ndash; 对密码进行自定义校验 &ndash;&gt;
     <bean class="com.dels.security.UPEncode" id="passwordEncoder" />
 
-    <!-- 自定义登录失败处理类-->
+    &lt;!&ndash; 自定义登录失败处理类&ndash;&gt;
     <bean class="com.dels.security.LoginFailureHandler" id="authenticationFailureHandler">
         <property name="defaultFailureUrl" value="/manager/login" />
     </bean>
-    <!-- 自定义登录成功处理类  l13595 2017/1/13 16:00-->
+    &lt;!&ndash; 自定义登录成功处理类  l13595 2017/1/13 16:00&ndash;&gt;
     <bean class="com.dels.security.LoginSuccessHandler" id="authenticationSuccessHandler">
         <property name="defaultTargetUrl" value="/#/index/index" />
     </bean>
-    <!-- 自定义的EntryPoint用于自定义权限异常的处理 -->
+    &lt;!&ndash; 自定义的EntryPoint用于自定义权限异常的处理 &ndash;&gt;
      <bean id="myEntryPoint" class="com.dels.security.DelsAuthenticationEntryPoint">
         <property name="loginFormUrl" value="/manager/login"/>
     </bean>
 
     <bean class="com.dels.security.LogoutSuccessHandler" id="logoutSuccessHandler">
         <property name="defaultTargetUrl" value="/manager/login" />
-    </bean>
+    </bean>-->
 
 </beans>
