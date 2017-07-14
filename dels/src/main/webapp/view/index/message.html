@@ -1,0 +1,33 @@
+<div>
+
+</div>
+<div class="con" ng-repeat="item in vm.items|paging:vm.page.index:vm.page.size">
+    <div class="info">
+        <span class="floor">#{{item.id}}</span>
+        <span class="time">{{item.checktime}}</span>
+    </div>
+    <div class="reply">{{item.content}}</div>
+</div>
+
+<div ng-if="vm.items.length > 0" class="col-md-10 pull-right">
+    <uib-pagination total-items="vm.items|size" ng-model="vm.page.index" max-size="5"
+                    items-per-page="vm.page.size" class="pagination-sm pull-left" boundary-links="true"
+                    previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+                    last-text="&raquo;">
+    </uib-pagination>
+</div>
+
+<section class="content" style="margin-top: 25px">
+    <form role="form">
+        <div class="discuss-speak form-group">
+            <div class="discuss-title">吐槽吧</div>
+            <textarea class="form-control c-ipt" rows="3" maxlength="100" placeholder="限制字数100"
+                      ng-model="content">
+            </textarea>
+            <button ng-disabled="commit" class="btn btn-default pull-left c-btn" ng-click="message()">
+                <i ng-if="commit" class="fa fa-spinner fa-spin fa-x fa-fw"></i>
+                <span ng-if="!commit">发布</span>
+            </button>
+        </div>
+    </form>
+</section>

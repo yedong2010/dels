@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="<%=path%>/assets/css/buttons.css">
     <link rel="stylesheet" href="<%=path%>/assets/css/style.css"/>
     <link rel="stylesheet" href="<%=path%>/assets/js/bootstrap/css/bootstrap-datetimepicker.css"/>
-    <link rel="stylesheet" href="<%=path%>/assets/css/patch.css">
     <link rel="stylesheet" href="<%=path%>/assets/css/angular-toastr.min.css"/>
     <link rel="stylesheet" href="<%=path%>/assets/js/textAngular/textAngular.css"/>
     <script type="text/javascript" src="<%=path%>/dist/vendor.js"></script>
@@ -24,28 +23,27 @@
 
     <div class="site-wrapper-inner">
 
-        <div class="cover-container top-height">
+        <div class="cover-container header-top">
 
-            <div class="masthead clearfix" ng-controller="indexCtrl">
-                <div class="inner">
-                    <h3 class="masthead-brand">Delete-so-mini</h3>
+            <div class="masthead" ng-controller="indexCtrl">
+                <div >
+                    <h2 class="masthead-brand">delete-mini</h2>
                     <nav>
                         <ul class="nav masthead-nav">
-                            <li class="active"><a href="#">搜索</a></li>
-                            <li><a href="#">留言板</a></li>
+                            <li class="active"><a href ui-sref="index">搜索</a></li>
+                            <li><a href ui-sref="message">留言板</a></li>
                         </ul>
                     </nav>
                 </div>
             </div>
         </div>
-        <div class="cover-container">
+        <div class="cover-container center">
             <div class="inner cover" ui-view>
             </div>
         </div>
         <div class="cover-container">
             <div class="mastfoot">
                 <div class="inner">
-                    <hr />
                     <p>11年入A站，一直都只是看看，很少评论，很是怀恋2年前delete-so，一个月前临时起意想要做个简单版的delete-so，
                         只有查询的功能（精力有限），所以加了个mini，也很感谢delete-so作者的同意，部分代码参考delete-so的开源代码,
                         大家低调使用, 说不定哪天就被猴王封了, by May-to-Marry.</p>

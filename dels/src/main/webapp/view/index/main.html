@@ -1,27 +1,21 @@
 <div class="input-group">
-    <input type="text" class="form-control" ng-model="content"
+    <input type="text" class="form-control c-ipt" ng-model="content" maxlength="8"
            placeholder="输入id就好..."> <span class="input-group-btn">
-		<button class="btn btn-default" ng-click="search()" type="button">Go!</button>
+		<button class="btn btn-default c-btn" ng-disabled="query" ng-click="search()" type="button">
+                <i ng-if="query" class="fa fa-spinner fa-spin fa-x fa-fw"></i>
+                <span ng-if="!query">Go!</span>
+        </button>
 	</span>
 </div>
-<div class="con">
-    <div class="info"><span class="floor">#1</span><a href="" class="user-name">松野轻松痴汉协会</a></div>
-    <div class="reply">就是这种感觉!太棒了！卡米尔亲情向好评！</div>
+<div class="nodata" ng-if="vm.items.length == 0">
+    <span>没有找到评论...</span>
 </div>
-<div class="con">
-    <div class="info"><span class="floor">#1</span><a href="" class="user-name">松野轻松痴汉协会</a></div>
-    <div class="reply">就是这种感觉!太棒了！卡米尔亲情向好评！</div>
-</div>
-<div class="con">
-    <div class="info"><span class="floor">#1</span><a href="" class="user-name">松野轻松痴汉协会</a></div>
-    <div class="reply">就是这种感觉!太棒了！卡米尔亲情向好评！</div>
-</div>
-<div class="con">
-    <div class="info"><span class="floor">#1</span><a href="" class="user-name">松野轻松痴汉协会</a></div>
-    <div class="reply">就是这种感觉!太棒了！卡米尔亲情向好评！</div>
-</div>
-<div class="con">
-    <div class="info"><span class="floor">#1</span><a href="" class="user-name">松野轻松痴汉协会</a></div>
-    <div class="reply">就是这种感觉!太棒了！卡米尔亲情向好评！</div>
+<div ng-if="vm.items.length > 0" class="con" ng-repeat="item in vm.items">
+    <div class="info">
+        <span class="floor">#{{item.layer}}</span>
+        <a  class="user-name">{{item.username}}</a>
+        <span class="time">{{item.checktime}}</span>
+    </div>
+    <div class="reply">{{item.content}}</div>
 </div>
 

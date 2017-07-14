@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,9 +64,11 @@ public class IndexController {
      * @return
      */
     @RequestMapping(value = "insercontent", method = {RequestMethod.POST})
-    public String insertContent(@RequestBody Map<String, String> req){
+    public Map<String, String> insertContent(@RequestBody Map<String, String> req){
         log.info("insert contents:" + req);
-        return msService.insertMessage(req.get("content"));
+        Map<String, String> result = new HashMap<>();
+        result.put("msg", msService.insertMessage(req.get("content")));
+        return result;
     }
 
 

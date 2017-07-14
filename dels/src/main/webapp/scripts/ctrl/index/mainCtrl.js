@@ -12,14 +12,22 @@ app.controller('mainCtrl', ['$scope', '$state', '$location', 'commonService', '$
 
     var vm = $scope.vm ={};
 
+    $scope.query = false;
+
     $scope.search = function () {
+        if($scope.content == '' || $scope.content.trim().length == 0){
+
+            return;
+        }
+        $scope.query = true;
         var param ={};
         param.acid = $scope.content;
         commonService.queryByParam('index/queryaccbyid', param).then(function (data) {
             vm.items = data;
-            console.info(data);
+            $scope.query = false;
         }, function () {
             toastr.error('查询请求失败.');
+            $scope.query = false;
         })
     }
 

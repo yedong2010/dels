@@ -17,6 +17,10 @@ app.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $u
         url: "/index/main",
         controller: "mainCtrl",
         templateUrl: './view/index/main.html'
+    }).state('message', {
+        url: "/index/message",
+        controller: "messageCtrl",
+        templateUrl: './view/index/message.html'
     })
 }]);
 

@@ -37,7 +37,7 @@
         <filter-class>com.dels.security.RequestFilter</filter-class>
         <init-param>
             <param-name>refererAccepts</param-name>
-            <param-value>http://localhost;http://19.16.13.65;http://19.16.13.66</param-value>
+            <param-value>http://localhost;http://192.168.1.124;http://www.deletemini.com</param-value>
         </init-param>
     </filter>
     <filter-mapping>

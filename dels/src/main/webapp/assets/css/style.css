@@ -14,10 +14,12 @@
     line-height: 26px;
     font-size: 12px;
     float: left;
+    width: 100%;
+    text-align: left;
 }
 
-.info > span {
-    margin-right: 20px;
+.info > a {
+    margin-left: 20px;
 }
 
 .floor {
@@ -35,6 +37,10 @@ a.user-name {
     padding-bottom: 4px;
     display: inline-block;
     word-wrap: break-word;
+}
+
+span.time{
+    float: right;
 }
 
 a.user-name:hover {
@@ -57,6 +63,10 @@ a,
 a:focus,
 a:hover {
     color: #fff;
+}
+
+input {
+    border-color: #333;
 }
 
 hr {
@@ -109,8 +119,12 @@ body {
 }
 
 .cover-container {
-    margin-right: auto;
     margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
 }
 
 .top-height {
@@ -125,6 +139,17 @@ body {
 /*
  * Header
  */
+.header-top{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #333;
+    height: 46px;
+    font-size: 12px;
+    box-sizing: border-box;
+    z-index: 10;
+}
 .masthead-brand {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -173,17 +198,38 @@ body {
 }
 
 /*
- * Cover
+ * center
  */
+.center{
+    margin-top: 100px;
+}
 
 .cover {
     padding: 0 20px;
-    z-index: 100;
 }
 
 .cover .btn-lg {
     padding: 10px 20px;
     font-weight: bold;
+}
+.nodata{
+    margin-top: 5%;
+}
+.c-btn{
+    border-color: #333;
+    height: 34px;
+}
+.c-ipt{
+    border-color: #333;
+}
+
+.discuss-title {
+    padding-left: 5px;
+    margin-bottom: 10px;
+    font-family: "Microsoft YaHei", Arial, Helvetica, sans-serif, 宋体;
+    font-size: 16px;
+    line-height: 16px;
+    border-left: 4px solid #99a2aa;
 }
 
 /*
@@ -202,7 +248,7 @@ body {
 @media (min-width: 768px) {
     /* Pull out the header and footer */
     .masthead {
-        position: fixed;
+        /*position: fixed;*/
         top: 0;
         z-index: 1000;
     }
