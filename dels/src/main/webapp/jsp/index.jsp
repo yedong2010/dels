@@ -41,7 +41,7 @@
         <div class="cover-container">
             <div class="mastfoot">
                 <div class="inner">
-                    <p>11年入A站，一直都只是看看，很少评论，很是怀恋2年前delete-so，临时起意想要做个简单版的delete-so，所以加了个mini,
+                    <p>11年入A站，一直都只是看看，很少评论，很怀恋2年前的delete-so，临时起意想要做个简单版的delete-so，所以加了个mini,
                         前后也拖沓了1个多月，当然最近工作也比较忙，很感谢delete-so作者的同意，部分代码参考delete-so的开源代码,
                         大家低调使用, 说不定哪天就被封了。 by May-to-Marry.</p>
                 </div>
