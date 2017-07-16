@@ -28,7 +28,7 @@
                     <nav>
                         <ul class="nav masthead-nav">
                             <li class="active"><a href ui-sref="index">搜索</a></li>
-                            <li><a href ui-sref="message">留言板</a></li>
+                            <li class="active"><a href ui-sref="message">吐槽</a></li>
                         </ul>
                     </nav>
                 </div>
@@ -41,9 +41,9 @@
         <div class="cover-container">
             <div class="mastfoot">
                 <div class="inner">
-                    <p>11年入A站，一直都只是看看，很少评论，很是怀恋2年前delete-so，一个月前临时起意想要做个简单版的delete-so，
-                        只有查询的功能（精力有限），所以加了个mini，也很感谢delete-so作者的同意，部分代码参考delete-so的开源代码,
-                        大家低调使用, 说不定哪天就被猴王封了, by May-to-Marry.</p>
+                    <p>11年入A站，一直都只是看看，很少评论，很是怀恋2年前delete-so，临时起意想要做个简单版的delete-so，所以加了个mini,
+                        前后也拖沓了1个多月，当然最近工作也比较忙，很感谢delete-so作者的同意，部分代码参考delete-so的开源代码,
+                        大家低调使用, 说不定哪天就被封了。 by May-to-Marry.</p>
                 </div>
             </div>
         </div>

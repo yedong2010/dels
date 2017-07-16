@@ -12,10 +12,12 @@ app.controller('messageCtrl', ['$scope', '$state', '$location', 'commonService',
 
     $scope.commit = false;
 
+    $scope.query = false;
+
     var vm = $scope.vm ={};
 
     vm.page = {
-        size: 10,
+        size: 5,
         index: 1
     };
 
@@ -46,10 +48,13 @@ app.controller('messageCtrl', ['$scope', '$state', '$location', 'commonService',
     }
 
     $scope.getMessages = function () {
+        $scope.query = true;
         commonService.getRequest('index/querycontents').then(function (data) {
             vm.items = data;
+            $scope.query =false;
         }, function () {
             toastr.error('获取评论列表失败.');
+            $scope.query = false;
         })
     }
 

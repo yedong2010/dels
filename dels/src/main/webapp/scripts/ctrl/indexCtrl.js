@@ -7,5 +7,5 @@
  * @date 2017-07-11
  */
 app.controller('indexCtrl', ['$scope', '$state', '$location', 'commonService', '$document', '$rootScope','toastr', function ($scope, $state, $location, commonService, $document, $rootScope,toastr) {
-    
+
 }]);

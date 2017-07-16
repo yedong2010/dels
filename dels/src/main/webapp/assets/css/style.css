@@ -3,10 +3,13 @@
  */
 
 .con {
-    position: relative;
     padding: 22px 0 14px;
-    height: 80px;
+    height: auto;
     border-bottom: 1px solid lightgrey;
+}
+.uib{
+    text-align: right;
+    margin-top: 5px;
 }
 
 .info {
@@ -52,10 +55,8 @@ a.user-name:hover {
     padding: 2px 0;
     font-size: 14px;
     text-shadow: none;
-    overflow: hidden;
     word-wrap: break-word;
-    position: absolute;
-    top: 50px;;
+    text-align: left;
 }
 
 /* Links */
@@ -230,6 +231,7 @@ body {
     font-size: 16px;
     line-height: 16px;
     border-left: 4px solid #99a2aa;
+    float: left;
 }
 
 /*

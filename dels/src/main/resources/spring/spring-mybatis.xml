@@ -28,6 +28,8 @@
         <property name="maxWait" value="${jdbc.maxWait}"></property>
         <!-- 连接池创建的连接的默认的read-only状态 -->
         <property name="defaultReadOnly" value="false"></property>
+        <property name="validationQuery" value="select 1"></property>
+        <property name="testWhileIdle" value="true"></property>
     </bean>
 
     <!-- spring和MyBatis整合 -->
